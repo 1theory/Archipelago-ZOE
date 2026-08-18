@@ -1,0 +1,50 @@
+"""This module defines constants used when handling regions/areas, and their associated data"""
+
+
+class ZOEREGION:
+    """Constant strings for each game region/area"""
+    MENU = "Menu"
+    GLOBAL_HUB = "Global Hub"
+    HANGAR_1 = "HANGAR.1"
+    FACTORY_1 = "FACTORY.1"
+    TOWN_1_TEMPEST = "TOWN.1 (Tempest)"
+    TOWN_1 = "TOWN.1"
+    TOWN_2 = "TOWN.2"
+    CITY_1 = "CITY.1"
+    EPS_1 = "EPS.1"
+    EPS_2 = "EPS.2"
+    CITY_2 = "CITY.2"
+    FACTORY_2 = "FACTORY.2"
+    TOWN_3 = "TOWN.3"
+    PARK_1 = "PARK.1"
+    MOUNTAIN_1 = "MOUNTAIN.1"
+    MOUNTAIN_1_NEBULA = "MOUNTAIN.1 (Nebula)"
+    WAREHOUSE_1 = "WAREHOUSE.1"
+    TUNNEL_1 = "TUNNEL.1"
+    HUB_1 = "HUB.1"
+    VR_TRAINING = "VR.TRAINING"
+    ATLANTIS_1 = "Ending"
+
+AREA_NAME_FROM_ID: dict[int, str] = {
+    0x00: ZOEREGION.MENU,    
+    0x01: ZOEREGION.GLOBAL_HUB,
+    0x02: ZOEREGION.HANGAR_1,
+    0x03: ZOEREGION.FACTORY_1,    
+    0x04: ZOEREGION.TOWN_1_TEMPEST,
+    0x05: ZOEREGION.TOWN_1,
+    0x06: ZOEREGION.TOWN_2,    
+    0x07: ZOEREGION.CITY_1,
+    0x08: ZOEREGION.EPS_1,
+    0x09: ZOEREGION.EPS_2,    
+    0x0A: ZOEREGION.CITY_2,
+    0x0B: ZOEREGION.FACTORY_2,
+    0x0C: ZOEREGION.TOWN_3,    
+    0x0D: ZOEREGION.PARK_1,
+    0x0E: ZOEREGION.MOUNTAIN_1,
+    0x0F: ZOEREGION.MOUNTAIN_1_NEBULA,    
+    0x10: ZOEREGION.WAREHOUSE_1,
+    0x11: ZOEREGION.TUNNEL_1,
+    0x12: ZOEREGION.HUB_1,    
+    0x13: ZOEREGION.VR_TRAINING,
+    0x14: ZOEREGION.ATLANTIS_1,
+}

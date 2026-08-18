@@ -1,0 +1,501 @@
+"""This module provides an ZOE interface to control the game"""
+import time
+from dataclasses import dataclass
+from random import choice, randint, uniform
+from typing import Any
+
+from typing_extensions import deprecated
+
+from BaseClasses import ItemClassification
+from CommonClient import logger
+from Utils import __version__
+from worlds.zoe.client.general_interface import GameInterface
+from worlds.zoe.constants.check_type import CHECKTYPE
+#from worlds.zoe.constants.cutscene_flag import ZOECUTSCENEFLAG
+from worlds.zoe.constants.data.address import ZOEADDRESSDATA, SAVE_DATA
+from worlds.zoe.constants.data.item import (passcode_data, info_data, module_data, area_data,
+                                             ITEM_FROM_AP_CODE, ITEM_NAME_FROM_ID, weapon_data, ZOE_ITEM_DATA_TABLE)
+from worlds.zoe.constants.data.location import (LOCATION_FROM_AP_CODE, LOCATION_TO_AREA_FLAG,
+                                                 ZOE_LOCATION_DATA_TABLE, ZOELOCATIONDATA, REGION_TO_AREA_LOCATION)
+from worlds.zoe.constants.data.region import ZOE_REGION_DATA_TABLE
+from worlds.zoe.constants.data.status import ZOE_STATUS_DATA_TABLE
+from worlds.zoe.constants.functions import ZOEFUNCTION 
+from worlds.zoe.constants.item_tags import ZOEITEMTAG
+from worlds.zoe.constants.items import ZOEITEM
+from worlds.zoe.constants.locations.general import ZOELOCATION
+from worlds.zoe.constants.locations.tags import ZOETAG
+from worlds.zoe.constants.options import ZOEOPTION
+from worlds.zoe.constants.progress_flag import ZOEPROGRESSFLAG
+from worlds.zoe.constants.region import ZOEREGION, AREA_NAME_FROM_ID
+from worlds.zoe.constants.status import ZOESTATUS
+from worlds.zoe.constants.version import GAME_ID_TO_VERSION, ZOEVERSION
+
+class ZoeInterface(GameInterface):
+    """Handles reading and modifying the game memory"""
+
+    @dataclass
+    class UnlockData:
+        """Data structure for tracking if items should be unlocked and if they are now being unlocked"""
+        status: int
+        unlock_delay: int
+
+        def __init__(self,
+                     status: int = 0,
+                     unlock_delay: int = 0):
+            self.status = status
+            self.unlock_delay = unlock_delay
+
+        def __repr__(self):
+            return f"{{ status: {self.status}, unlock_delay: {self.unlock_delay} }}"
+
+    @dataclass
+    class Options:
+        """Data structure for storing options"""
+        start_inventory_from_pool: dict[str, int]
+        starting_weapons: dict[str, int]
+
+        exclude_locations: set[str]
+        deathlink: int
+        filler_weight: dict[str, int]
+
+    UnlockItem: dict[str, UnlockData] = None
+    options = Options
+    timers: dict[str, float] = {}
+    planet: str = ZOEREGION.GLOBAL_HUB
+    new_planet: bool = True
+    vehicle: int = 0
+    health: int = 100
+    max_health: int = 10
+    main_menu: bool = False
+    death_count: int = 0
+    last_death_count: int = 0
+    last_death_state: int = 0
+    has_died: bool = False
+    deathlink_grace_period: float = 0.0
+    player_level: int = 0
+    jehuty_exp: int = 0
+    checked_locations: set[str] = set()
+    unfreeze_packs: bool = False
+    stored_fillers: dict[str, int] = {}
+    initial_fillers: dict[str, int] = {}
+    equipped_weapon: int = 0
+
+    def __init__(self):
+        super().__init__()  # GameInterfaceの初期化
+
+    #####################
+    # Inherit functions #
+    #####################
+
+    def _read8(self, address: int) -> int:
+        return super()._read8(self.address_convert(address))
+
+    def _read16(self, address: int) -> int:
+        return super()._read16(self.address_convert(address))
+
+    def _read32(self, address: int) -> int:
+        return super()._read32(self.address_convert(address))
+
+    def _read_bytes(self, address: int, n: int) -> bytes:
+        return super()._read_bytes(self.address_convert(address), n)
+
+    def _read_float(self, address: int) -> float:
+        return super()._read_float(self.address_convert(address))
+
+    def _read_string(self, address, n) -> str:
+        return super()._read_string(self.address_convert(address), n)
+
+    def _read_bits(self, address: int) -> set[int]:
+        bits: set[int] = set()
+        value = self._read8(address)
+        for i in range(8):
+            if value & (1 << i):
+                bits.add(i)
+        return bits
+
+    def _write8(self, address: int, value: int):
+        return super()._write8(self.address_convert(address), value)
+
+    def _write16(self, address: int, value: int):
+        return super()._write16(self.address_convert(address), value)
+
+    def _write32(self, address: int, value: int):
+        return super()._write32(self.address_convert(address), value)
+
+    def _write_bytes(self, address: int, value: bytes):
+        return super()._write_bytes(self.address_convert(address), value)
+
+    def _write_float(self, address: int, value: float):
+        return super()._write_float(self.address_convert(address), value)
+
+    def _write_string(self, address: int, value: str):
+        return super()._write_string(self.address_convert(address), value)
+
+    def _write_bits(self, address: int, value: set[int]):
+        bits = self._read_bits(address)
+        if value.issubset(bits):
+            return None
+        bits |= value
+        write: int = 0
+        for bit in bits:
+            if 0 <= bit <= 7:
+                write += 1 << bit
+            else:
+                raise ValueError(f"Invalid bit position {bit}")
+
+        return self._write8(address, write)
+
+    def _unwrite_bits(self, address: int, value: set[int]):
+        bits = self._read_bits(address)
+        if value.isdisjoint(bits):
+            return None
+        bits -= value
+        write: int = 0
+        for bit in bits:
+            if 0 <= bit <= 7:
+                write += 1 << bit
+            else:
+                raise ValueError(f"Invalid bit position {bit}")
+
+        return self._write8(address, write)
+
+    ###############################
+    # Called on Server Connection #
+    ###############################
+
+    def proc_option(self, slot_data: dict[str, Any]):
+        """Process slot option data received when connecting to the server"""
+        logger.debug(f"Processing options: {slot_data}")
+        self.options.start_inventory_from_pool = slot_data[ZOEOPTION.START_INVENTORY_FROM_POOL]
+        self.options.starting_weapons = slot_data[ZOEOPTION.STARTING_WEAPONS]
+
+        self.options.exclude_locations = slot_data[ZOEOPTION.EXCLUDE]
+        self.options.deathlink = slot_data[ZOEOPTION.DEATHLINK]
+        self.options.filler_weight = slot_data[ZOEOPTION.FILLER_WEIGHT]
+
+
+    ########################################
+    # Called on Game and Server Connection #
+    ########################################
+
+    def init(self):
+        """Initialise values once the game and server are both connected"""
+        # Unlock state variables/ArmorUpgrade variable
+        self.UnlockItem = {name: self.UnlockData() for name in ITEM_FROM_AP_CODE.values()}
+        logger.debug(f"UnlockItem dict:{self.UnlockItem.keys()}")
+
+    def check_main_menu(self):
+        """Check if the player is on the main menu, before starting the game"""
+        if self._read8(ZOESTATUS.CURRENT_AREA) == 0x00:
+            return True
+        return False
+
+    ##########################
+    # Called on Loading File #
+    ##########################
+
+    def reset_file(self):
+        """Remove all items and progress on the current file, ready to be set based on current slot progress"""
+        self.remove_all_items()
+        self.undo_collections()
+
+    def remove_all_items(self):
+        """Remove all items from the player's inventory"""
+        for item in self.UnlockItem.keys():
+            self.UnlockItem[item].status = 0
+        self.UnlockItem[ZOEITEM.HANGAR_1].status = 1
+        self.UnlockItem[ZOEITEM.FACTORY_1].status = 1
+        self.UnlockItem[ZOEITEM.TOWN_1].status = 1
+        self.timers.clear()
+        self.checked_locations.clear()
+        self.visited_areas.clear()
+        self.module_cycler()
+        self.area_cycler()
+        self.weapon_cycler()
+        self.info_cycler()
+        self.passcode_cycler()
+        self.local_server_cycler()
+        self.timer_cycler()
+
+    def undo_collections(self):
+        """Unset flags in the game associated to randomizer locations"""
+        checks: dict[int, set[int]] = {}
+        for location in ZOE_LOCATION_DATA_TABLE.values():
+            for check in location.CHECK_ADDRESS:
+                if check.TYPE & CHECKTYPE.SIZE == CHECKTYPE.BIT:
+                    checks.setdefault(check.ADDRESS, set()).add(check.VALUE)
+        for address, value in checks.items():
+            self._unwrite_bits(address, value)
+
+    def important_items(self, item: int, us: str, location: int):
+        """Runs when loading into game from the main menu to update the player with important items from the server,
+        skips filler and trap items to not flood the player with bolts/xp"""
+        if (ZOEITEMTAG.FILLER in ZOE_ITEM_DATA_TABLE[ITEM_FROM_AP_CODE[item]].TAGS or ZOEITEMTAG.TRAP in
+            ZOE_ITEM_DATA_TABLE[ITEM_FROM_AP_CODE[item]].TAGS):
+            return
+        self.item_received(item, us, None, location)
+
+    def filler_items(self, item: int):
+        """Runs when loading into game from the main menu to update the player with filler items from the server"""
+        if ZOEITEMTAG.FILLER in ZOE_ITEM_DATA_TABLE[ITEM_FROM_AP_CODE[item]].TAGS:
+            self.initial_fillers[ITEM_FROM_AP_CODE[item]] = self.initial_fillers.get(ITEM_FROM_AP_CODE[item], 0) + 1
+            if self.initial_fillers[ITEM_FROM_AP_CODE[item]] > 255:
+                self.initial_fillers[ITEM_FROM_AP_CODE[item]] = 255
+
+    def process_offline_fillers(self, data_received: bool):
+        """Process any filler items received while offline"""
+        logger.debug(f"Initial filler items: {self.initial_fillers} and data received: {data_received}")
+        if not data_received:
+            logger.debug(f"No new offline filler items for {item} (stored: {stored_count}, current: {count})")
+        self.stored_fillers = self.initial_fillers.copy()
+
+    def collect_locations(self, locations: set[str]) -> set[str]:
+        """Set the in game flags for this location for it to act as if the player has already collected the item here"""
+        checks: dict[int, set[int]] = {}
+        output: set[str] = set()
+        for location in locations:
+            self.checked_locations.add(location)
+            output.add(location)
+            loc_data: ZOELOCATIONDATA = ZOE_LOCATION_DATA_TABLE[location]
+            for check in loc_data.CHECK_ADDRESS:
+                if check.TYPE & CHECKTYPE.SIZE == CHECKTYPE.BIT:
+                    checks.setdefault(check.ADDRESS, set()).add(check.VALUE)
+        for address, value in checks.items():
+            self._write_bits(address, value)
+        return output
+
+    def load_save(self, save: dict[int, tuple[int, int]]):
+        """Set the player's current values based on the server's save-data"""
+        if self.main_menu:
+            return
+        logger.debug(f"Save data: {save}")
+        defaults: dict[int, tuple[int, int]] = {data.ADDRESS: (data.TYPE, data.VALUE) for data in SAVE_DATA}
+        logger.debug(f"Default values: {defaults}")
+        for address, data in save.items():
+            # Skip writing default values or lingering dev testing values saved on the server
+            default = defaults.get(address)
+            if default is None or data == default:
+                continue
+
+            size, value = data
+            match size:
+                case CHECKTYPE.BYTE:
+                    self._write8(address, value)
+                case CHECKTYPE.SHORT:
+                    self._write16(address, value)
+                case CHECKTYPE.INT:
+                    self._write32(address, value)
+
+    def reset_death_count(self):
+        """Update the tracked death count to the value in game"""
+        self.death_count = self._read32(ZOESTATUS.TOTAL_CONTINUES)
+        self.last_death_count = self.death_count
+
+    def setup_settings(self):
+        """Update in game settings based on the slot options"""
+        self._write8(ZOESTATUS.CONFIGURATION_BITFLAG, self.options.config)
+
+    def init_stored_fillers(self):
+        """Read the stored filler items from memory and fill the stored_fillers dictionary"""
+        self.stored_fillers[ZOEITEM.JEHUTY_EXP] = self._read8(ZOESTATUS.JEHUTY_EXP_PACKS)
+        self.stored_fillers[ZOEITEM.LEVEL_UP] = self._read8(ZOESTATUS.LEVEL_PACKS)
+        self.stored_fillers[ZOEITEM.EXTRA_AMMO] = self._read8(ZOESTATUS.AMMO_PACKS)
+        logger.debug(f"Stored filler items: {self.stored_fillers}")
+
+    #############################
+    # Start of Main Update Loop #
+    #############################
+
+    def early_update(self):
+        """Ran early in the update cycle, memory reads should happen here before any evaluations begin"""
+        new_area = AREA_NAME_FROM_ID[self._read8(ZOESTATUS.CURRENT_AREA)]
+        if self.area != new_area:
+            self.planet = new_area
+            self.new_area = True
+        else:
+            self.new_area = False
+        self.health = self._read8(ZOESTATUS.PLAYER_HEALTH)
+        self.max_health = self._read8(ZOESTATUS.PLAYER_HEALTH)
+        self.level = self._read8(ZOESTATUS.PLAYER_LEVEL)
+        self.equipped_weapon = self._read8(ZOESTATUS.EQUIPPED_WEAPON)
+        self.jehuty_exp = self._read32(ZOESTATUS.PLAYER_EXPERIENCE)
+
+    #################
+    # Receive Items #
+    #################
+
+    def item_received(self,
+                      item_code: int,
+                      our_name: str | None,
+                      other_player: str | None,
+                      location: int):
+        """Handle receiving items from the multiworld"""
+        name = PROG_TO_NAME_DICT.get(ITEM_FROM_AP_CODE[item_code], ITEM_FROM_AP_CODE[item_code])
+        if other_player is not None:
+            classification = ZOE_ITEM_DATA_TABLE[name].AP_CLASSIFICATION
+            if other_player == our_name:
+                if location == 0:
+                    pass
+                elif location > 0:
+                    pass
+        logger.debug(f"Item received: {ITEM_FROM_AP_CODE[item_code]}, AP code: {item_code}")
+        if name in area_data.keys():
+            if self.UnlockItem[name].status:
+                return
+            self.UnlockItem[name].status += 1
+
+        match name:                    
+            case ZOEITEM.JEHUTY_EXP:
+                if not self.jehuty_exp:
+                    self.jehuty_exp = self._read32(ZOESTATUS.PLAYER_EXPERIENCE)
+                exp_gain = min(200, max(200, int(self.jehuty_exp * 0.15)))
+                self.jehuty_exp += exp_gain
+                if self.jehuty_exp > 0x7FFFFFFF:
+                    self.jehuty_exp = 0x7FFFFFFF
+                self._write32(ZOESTATUS.PLAYER_EXPERIENCE, self.jehuty_exp)
+                jehuty_exp_packs = self._read8(ZOESTATUS.JEHUTY_EXP_PACKS)
+                if jehuty_exp_packs < 0xFF:
+                    jehuty_exp_packs += 1
+                self._write8(ZOESTATUS.JEHUTY_EXP_PACKS, jehuty_exp_packs)
+            case ZOEITEM.LEVEL_UP:
+                self.player_level = self._read8(ZOESTATUS.PLAYER_LEVEL)
+                lvl_gain = self.player_level + 1
+                if level_packs < 0xFF:
+                    level_packs += 1
+                self._write8(self.player_level, lvl_gain)
+                self._write8(ZOESTATUS.LEVEL_PACKS, level_packs)
+            case ZOEITEM.EXTRA_AMMO:
+                pass
+#                ammo_pack = self.current_ammo + 5
+#                for weapon_name in weapon_data.keys():
+#                    if self.UnlockItem[weapon_name].status:
+#                        self._write32(weapon_data[weapon_name].AMMO_ADDRESS, ammo_pack)
+            case ZOEITEM.ROTATION_TRAP:
+                pass
+
+        if name in weapon_data.keys():
+            if weapon_data[name].AMMO:
+                self._write32(weapon_data[name].AMMO_ADDRESS, weapon_data[name].AMMO)
+        if name in weapon_data.keys() and self.UnlockItem[name].status == 1:
+            self.update_equip(name)
+
+    def update_equip(self, name: str):
+        """Equip the most recently collected weapon/gadget, update recent uses"""
+
+        self._write8(ZOESTATUS.EQUIPPED_WEAPON, equipable_data[name].ID)
+
+    ###################
+    # Check Locations #
+    ###################
+
+    def is_location_checked(self, ap_code: int) -> bool:
+        """Reads location data to find what memory check should be done, returns the collection state of the location"""
+        location = LOCATION_FROM_AP_CODE[ap_code]
+        if location in self.checked_locations:
+            return True
+        loc_data: ZOELOCATIONDATA = ZOE_LOCATION_DATA_TABLE[location]
+        if not loc_data:
+            return False
+        check_all: bool = True
+        for check in loc_data.CHECK_ADDRESS:
+            match check.TYPE & CHECKTYPE.SIZE:
+                case CHECKTYPE.BIT:
+                    check_all &= check.VALUE in self._read_bits(check.ADDRESS)
+                case CHECKTYPE.BYTE:
+                    value_to_check = self.cycle_cache.get(check.ADDRESS, None)
+                    if value_to_check is None:
+                        value_to_check = self._read8(check.ADDRESS)
+                        self.cycle_cache[check.ADDRESS] = value_to_check
+                    check_all &= self.compare(value_to_check, check)
+                case CHECKTYPE.SHORT:
+                    value_to_check = self.cycle_cache.get(check.ADDRESS, None)
+                    if value_to_check is None:
+                        value_to_check = self._read16(check.ADDRESS)
+                        self.cycle_cache[check.ADDRESS] = value_to_check
+                    check_all &= self.compare(value_to_check, check)
+                case CHECKTYPE.INT:
+                    value_to_check = self.cycle_cache.get(check.ADDRESS, None)
+                    if value_to_check is None:
+                        value_to_check = self._read32(check.ADDRESS)
+                        self.cycle_cache[check.ADDRESS] = value_to_check
+                    check_all &= self.compare(value_to_check, check)
+        if check_all:
+            self.checked_locations.add(location)
+        return check_all
+
+    @staticmethod
+    def compare(value: int, check: ZOEADDRESSDATA) -> bool:
+        """Compares a value using the checktype provided in data"""
+        match check.TYPE & CHECKTYPE.SIGN:
+            case CHECKTYPE.EQ:
+                return value == check.VALUE
+            case CHECKTYPE.NEQ:
+                return value != check.VALUE
+            case CHECKTYPE.GT:
+                return value > check.VALUE
+            case CHECKTYPE.LT:
+                return value < check.VALUE
+            case CHECKTYPE.GE:
+                return value >= check.VALUE
+            case CHECKTYPE.LE:
+                return value <= check.VALUE
+        return False
+
+    #############
+    # Deathlink #
+    #############
+
+    def alive(self) -> tuple[bool, str]:
+        """Checks the current game state to determine if the player is still alive, and if not then how they died"""
+        if self.has_died:
+            self.last_death_count = self.death_count
+            logger.debug("Death Detected! (death count increased)")
+            death = (ZOESTATUS.GAME_OVER == 1)
+            return False, f"{self.player_type} {death}"
+
+        # logger.debug(f"{self.player_type} is Alive")
+        return True, f"{self.player_type} is Alive"
+
+    def can_be_killed(self) -> bool:
+        """Checks if the player can be killed based on the current game state."""
+        current_time = time.time()
+        if self.self.main_menu is True or ZOESTATUS.STAND_BY_STATE != 0:
+            self.deathlink_grace_period = current_time
+        if current_time - self.deathlink_grace_period < 1:
+            return False
+        return True    
+
+    def kill_player(self) -> bool:
+        """Checks the current game state to determine if and how to kill the player, returns success/failure"""
+        if not self.can_be_killed():
+            logger.debug("player unable to be killed")
+            return False
+        self._write8(ZOESTATUS.GAME_OVER, 1)
+        logger.debug("player successfully killed")
+        return True
+
+    ##############
+    # Check Goal #
+    ##############
+
+    @staticmethod
+    def get_victory_code():
+        """Returns the apcode value of the goal location"""
+        return ZOE_LOCATION_DATA_TABLE[ZOELOCATION.HUB_ATLANTIS].AP_CODE
+
+    ##################
+    # End of Main Loop #
+    ##################
+
+    def late_update(self):
+        """Ran at the end of the main loop to update any memory values based on collection state"""
+        #self.area_cycler()
+        #self.weapon_cycler()
+        #self.timer_cycler()
+        self.overflow_fix()
+
+    def overflow_fix(self):
+        """Detect any integer overflows and reset the value"""
+        if self.jehuty_exp > 0x7FFFFFFF:
+            self._write32(ZOESTATUS.PLAYER_EXPERIENCE, 0)
+        # If other stuff needs overflow fixing, add here
