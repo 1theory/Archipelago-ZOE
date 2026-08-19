@@ -9,7 +9,6 @@ from worlds.zoe.options.weapons_options import Weapons
 from worlds.zoe.options.local_server_options import LocalServers
 from worlds.zoe.options.modules_options import Modules
 from worlds.zoe.options.enemy_counter_options import EnemyCounter
-from worlds.zoe.options.starting_weapons_options import StartingWeapons
 
 def create_option_groups() -> list[OptionGroup]:
     """Return the list of option groups for this world"""
@@ -24,7 +23,6 @@ class ZoeOptions(PerGameCommonOptions):
     """YAML Options for ZOE"""
     deathlink: DeathLink
     start_inventory_from_pool: StartInventoryPool
-    starting_weapons: StartingWeapons
     exclude_locations: ZOEExcludeLocations
     weapons: Weapons
     enemy_counter: EnemyCounter
@@ -38,7 +36,6 @@ zoe_option_groups = [
         DeathLink,
     ]),
     OptionGroup("RAC3 Item Options", [
-        StartingWeapons,
         Weapons,
         Modules,
     ]),
@@ -55,10 +52,9 @@ zoe_option_groups = [
 slot_data_options: list[str] = [
     ZOEOPTION.DEATHLINK,
     ZOEOPTION.START_INVENTORY_FROM_POOL,
-    ZOEOPTION.STARTING_WEAPONS,
     ZOEOPTION.WEAPONS,
     ZOEOPTION.MODULES,
-    ZOEOPTION.LOCALSERVERS,
-    ZOEOPTION.ENEMYCOUNTER,
+    ZOEOPTION.LOCAL_SERVERS,
+    ZOEOPTION.ENEMY_COUNTER,
     ZOEOPTION.EXCLUDE,
 ]

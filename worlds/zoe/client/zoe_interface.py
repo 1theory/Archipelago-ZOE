@@ -52,7 +52,6 @@ class ZoeInterface(GameInterface):
     class Options:
         """Data structure for storing options"""
         start_inventory_from_pool: dict[str, int]
-        starting_weapons: dict[str, int]
 
         exclude_locations: set[str]
         deathlink: int
@@ -167,7 +166,6 @@ class ZoeInterface(GameInterface):
         """Process slot option data received when connecting to the server"""
         logger.debug(f"Processing options: {slot_data}")
         self.options.start_inventory_from_pool = slot_data[ZOEOPTION.START_INVENTORY_FROM_POOL]
-        self.options.starting_weapons = slot_data[ZOEOPTION.STARTING_WEAPONS]
 
         self.options.exclude_locations = slot_data[ZOEOPTION.EXCLUDE]
         self.options.deathlink = slot_data[ZOEOPTION.DEATHLINK]

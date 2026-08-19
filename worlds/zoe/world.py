@@ -9,9 +9,8 @@ from worlds.zoe.constants.data.item import item_groups, ZOE_ITEM_DATA_TABLE
 from worlds.zoe.constants.items import ZOEITEM
 from worlds.zoe.constants.locations.general import ZOELOCATION
 from worlds.zoe.constants.options import ZOEOPTION
-from worlds.zoe.items import (create_item, create_itempool, get_filler_selection, process_start_inventory,
-                               starting_areas, starting_weapons)
-from worlds.zoe.locations import get_level_locations, get_location_names, get_total_locations, location_groups
+from worlds.zoe.items import (create_item, create_itempool, get_filler_selection, process_start_inventory)
+from worlds.zoe.locations import get_location_names, get_total_locations
 from worlds.zoe.zoeoptions import ZoeOptions
 from worlds.zoe.regions import create_regions, get_regions
 from worlds.zoe.rules import set_rules
@@ -31,7 +30,6 @@ class ZoeWorld(World):
     game = ZOEOPTION.GAME_TITLE_FULL
     item_name_to_id = {name: data.AP_CODE for name, data in ZOE_ITEM_DATA_TABLE.items()}
     location_name_to_id = get_location_names()
-    location_name_groups = location_groups
     item_name_groups = item_groups
     preplaced_items: list[str] = []
     filler_items: list[str] = []
@@ -84,11 +82,11 @@ class ZoeWorld(World):
 
     def generate_starting_items(self):
         """Process player options to generate a list of early placed items, ensuring successful seed generation"""
-        self.preplaced_items = [ZOEITEM.METATRON]
+        self.preplaced_items = [ZOEITEM.JEHUTY_EXP]
         for item in self.preplaced_items:
             self.push_precollected(self.create_item(item))
         process_start_inventory(self)
-        return starting_weapons(self), starting_area(self)
+        return
 
     def create_items(self):
         itempool = create_itempool(self)
@@ -158,7 +156,6 @@ class ZoeWorld(World):
         slot_data: dict[str, Any] = {
             ZOEOPTION.VERSION: ZOEOPTION.VERSION_NUMBER,
             ZOEOPTION.START_INVENTORY_FROM_POOL: self.options.start_inventory_from_pool.value,
-            ZOEOPTION.STARTING_WEAPONS: self.options.starting_weapons.value,
             ZOEOPTION.MODULES: self.options.modules.value,
             ZOEOPTION.TOTAL_LOCATIONS: get_total_locations(self),
         }

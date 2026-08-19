@@ -12,7 +12,7 @@ class LocalServers(Choice):
     Enabled:  Local Servers are added as locations. 
     -----------------------------------------------------------------------------------------------
     """
-    display_name = ZOEOPTION.LOCALSERVERS
+    display_name = ZOEOPTION.LOCAL_SERVERS
     option_disabled = 0
     option_enabled = 1
     default = 1
