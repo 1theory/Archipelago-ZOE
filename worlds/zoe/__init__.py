@@ -18,11 +18,11 @@ components.append(Component(f"{ZOEOPTION.GAME_TITLE_FULL} Client",
                             func=run_client,
                             component_type=Type.CLIENT,
                             file_identifier=SuffixIdentifier(".apzoe"),
-                            icon="uya_icon",
+                            icon="zoe_icon",
                             description="Launch the Client for connecting to Zone of the Enders [PlayStation 2]",
                             ))
 
-#icon_paths["zoe_icon"] = f"ap:{__name__}/images/zoe_icon.png"
+icon_paths["zoe_icon"] = f"ap:{__name__}/images/zoe_icon.png"
 
 zoe_logger = getLogger(ZOEOPTION.GAME_TITLE_FULL)
 zoe_logger.setLevel(DEBUG)

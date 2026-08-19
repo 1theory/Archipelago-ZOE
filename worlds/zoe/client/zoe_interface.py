@@ -15,10 +15,8 @@ from worlds.zoe.constants.check_type import CHECKTYPE
 from worlds.zoe.constants.data.address import ZOEADDRESSDATA, SAVE_DATA
 from worlds.zoe.constants.data.item import (passcode_data, info_data, module_data, area_data,
                                              ITEM_FROM_AP_CODE, ITEM_NAME_FROM_ID, weapon_data, ZOE_ITEM_DATA_TABLE)
-from worlds.zoe.constants.data.location import (LOCATION_FROM_AP_CODE, LOCATION_TO_AREA_FLAG,
-                                                 ZOE_LOCATION_DATA_TABLE, ZOELOCATIONDATA, REGION_TO_AREA_LOCATION)
+from worlds.zoe.constants.data.location import (LOCATION_FROM_AP_CODE, ZOE_LOCATION_DATA_TABLE, ZOELOCATIONDATA)
 from worlds.zoe.constants.data.region import ZOE_REGION_DATA_TABLE
-from worlds.zoe.constants.data.status import ZOE_STATUS_DATA_TABLE
 from worlds.zoe.constants.functions import ZOEFUNCTION 
 from worlds.zoe.constants.item_tags import ZOEITEMTAG
 from worlds.zoe.constants.items import ZOEITEM

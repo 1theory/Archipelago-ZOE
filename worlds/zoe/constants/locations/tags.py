@@ -4,6 +4,7 @@
 class ZOETAG:
     """String constants for each location tag"""
     ENEMY = "Enemy"
+    ENEMYCOUNT = "Enemy Count"
     HARD_ENEMY = "Hard Enemy"
     UNSTABLE = "Unstable"
     MISSIONS = "Missions"

@@ -7,7 +7,7 @@ import Utils
 from CommonClient import get_base_parser, gui_enabled, logger, server_loop
 from NetUtils import NetworkItem
 from Utils import Any, async_start, init_logging
-from worlds.zoe.client.callbacks import handle_respawn, pcsx2_sync_task, update
+from worlds.zoe.client.callbacks import pcsx2_sync_task, update
 from worlds.zoe.client.message import ClientMessage
 from worlds.zoe.client.zoe_interface import ZoeInterface
 from worlds.zoe.constants.check_type import CHECKTYPE
@@ -99,7 +99,7 @@ class ZoeContext(CommonContext):
     uuid: str
     already_hinted: set[int] = set()
     command_processor = CommandProcessor
-    current_area: str = ZOEREGION.ANTILIA
+    current_area: str = ZOEREGION.MENU
     death_link: bool = False
     game: str = ZOEOPTION.GAME_TITLE_FULL
     game_interface: ZoeInterface

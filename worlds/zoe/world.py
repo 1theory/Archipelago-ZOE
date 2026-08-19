@@ -10,11 +10,11 @@ from worlds.zoe.constants.items import ZOEITEM
 from worlds.zoe.constants.locations.general import ZOELOCATION
 from worlds.zoe.constants.options import ZOEOPTION
 from worlds.zoe.items import (create_item, create_itempool, get_filler_selection, process_start_inventory)
-from worlds.zoe.locations import get_location_names, get_total_locations
+from worlds.zoe.locations import get_level_locations, get_location_names, get_total_locations, location_groups
 from worlds.zoe.zoeoptions import ZoeOptions
 from worlds.zoe.regions import create_regions, get_regions
 from worlds.zoe.rules import set_rules
-from worlds.zoe.universal_tracker import setup_options_from_slot_data, tracker_world
+#from worlds.zoe.universal_tracker import setup_options_from_slot_data, tracker_world
 from worlds.zoe.web_world import ZoeWeb
 
 zoe_logger = getLogger(ZOEOPTION.GAME_TITLE_FULL)
@@ -30,6 +30,7 @@ class ZoeWorld(World):
     game = ZOEOPTION.GAME_TITLE_FULL
     item_name_to_id = {name: data.AP_CODE for name, data in ZOE_ITEM_DATA_TABLE.items()}
     location_name_to_id = get_location_names()
+    location_name_groups = location_groups
     item_name_groups = item_groups
     preplaced_items: list[str] = []
     filler_items: list[str] = []
@@ -39,7 +40,7 @@ class ZoeWorld(World):
     passthrough: dict[str, Any]
     ut_can_gen_without_yaml: bool = True
     disable_ut: bool = False
-    tracker_world: ClassVar = tracker_world
+    #tracker_world: ClassVar = tracker_world
 
     for region in get_regions():
         location_name_groups[region] = get_level_locations(region)
@@ -61,24 +62,8 @@ class ZoeWorld(World):
                                 "These builds are meant for testing and bug reporting purposes "
                                 "and should not be used for normal play!\n")
         # implement .yaml-less Universal Tracker support
-        setup_options_from_slot_data(self)
+#        setup_options_from_slot_data(self)
         create_regions(self)
-
-        starting_weapon_list, starting_area_list = self.generate_starting_items()
-        #self.handle_option_errors(starting_area_list, starting_weapon_list)
-        #self.dead_seed_check(starting_area_list, starting_weapon_list)
-        #self.place_starting_items(starting_area_list, starting_weapon_list)
-
-    #def place_starting_items(self, starting_planet_list: list[str], starting_weapon_list: list[str]):
-    #    """Take the list of starting planets and starting weapons and place them on locations or as precollected"""
-
-    #def handle_option_errors(self, starting_planet_list: list[str], starting_weapon_list: list[str]):
-    #    """Check for option combinations that will never result in successful seed generation and warn the player"""
-    #    raise OptionError("Options selected do not allow Ratchet to collect a Clank Pack and advance past Florana")
-
-    #def dead_seed_check(self, starting_planet_list: list[str], starting_weapon_list: list[str]):
-    #    """Check for option combinations that will result in a dead seed and raise an OptionError to warn the player"""
-    #    raise OptionError("Options selected do not allow Ratchet to advance past Starship Phoenix")
 
     def generate_starting_items(self):
         """Process player options to generate a list of early placed items, ensuring successful seed generation"""

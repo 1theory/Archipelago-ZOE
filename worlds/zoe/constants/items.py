@@ -3,18 +3,19 @@
 
 class ZOEITEM:
     """Item name strings"""
-    MONITOR_FCMD = "Scouting Mode Module: monitor.fcmd"
-    GLOBAL_FCMD = "Flying Mode Module: global.fcmd"
-    RAPTR_CTRL_FCMD = "Raptor Control Module: raptr_ctrl.fcmd"
-    DETECTOR_FCMD = "Anti-Stealth Module: detector.fcmd"
-    VIRUS_XXXX = "Virus"
-    VACCINE_EXEC = "Vaccine Module: vaccine.exec"
+    MONITOR_FCMD = "monitor.fcmd: Scouting Mode Module"
+    GLOBAL_FCMD = "global.fcmd: Flying Mode Module"
+    RAPTR_CTRL_FCMD = "raptr_ctrl.fcmd: Raptor Control Module"
+    DETECTOR_FCMD = "detector.fcmd: Anti-Stealth Module"
+    VIRUS_XXXX = "Virus.xxxx"
+    VACCINE_EXEC = "vaccine.exec: Vaccine Module"
 
     ANTILLIA_INFO = "EPS System Data: antillia.info"
     INFO_B_INF = "Unused Info B"
     INFO_C_INF = "Unused Info C"
     INFO_D_INF = "Unused Info D"        
-    # The following don't exist in the game, they exist because of unused bitflags
+    # The following infos don't exist in the game, I created them because of unused bitflags
+    # Might be of use as filler
     INFO_E_INF = "Unused Info E"
     INFO_F_INF = "Unused Info F"
     INFO_G_INF = "Unused Info G"        
@@ -36,7 +37,7 @@ class ZOEITEM:
     PASS_CONTROL2 = "Passcode: Control 2"
     PASS_VACCINE = "Passcode: Vaccine"
     PASS_ANTILLIA = "Passcode: Antillia"
-    PASS_SNIPER = "Passcode: Sniper" # Unused, there is no actual Sniper passcode in the game, here just for continuity reasons.
+    PASS_SNIPER = "Passcode: Sniper" # Unused, there is no actual Sniper passcode in the game, I put it here just for continuity reasons.
     PASS_UNUSED = "Passcode: Unused" # An unused bitflag
 
     DECOY = "Decoy"
@@ -73,4 +74,4 @@ class ZOEITEM:
 
     ROTATION_TRAP = "Rotation Trap"
 
-    VICTORY = "Jehuty will self-destruct?!"
+    VICTORY = "The Purpose of Living"
