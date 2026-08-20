@@ -12,7 +12,7 @@ class Weapons(Choice):
     Enabled:  Weapons will be included in the item pool.
     ------------------------------------------------------------
     """
-    display_name = ZOEOPTION.MODULES
+    display_name = ZOEOPTION.WEAPONS
     option_disabled = 0
     option_enabled = 1
     default = 1

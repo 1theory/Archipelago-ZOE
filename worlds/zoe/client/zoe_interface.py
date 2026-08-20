@@ -13,7 +13,7 @@ from worlds.zoe.client.general_interface import GameInterface
 from worlds.zoe.constants.check_type import CHECKTYPE
 #from worlds.zoe.constants.cutscene_flag import ZOECUTSCENEFLAG
 from worlds.zoe.constants.data.address import ZOEADDRESSDATA, SAVE_DATA
-from worlds.zoe.constants.data.item import (passcode_data, info_data, module_data, area_data,
+from worlds.zoe.constants.data.item import (passcode_data, info_data, module_data, area_data, NAME_DICT,
                                              ITEM_FROM_AP_CODE, ITEM_NAME_FROM_ID, weapon_data, ZOE_ITEM_DATA_TABLE)
 from worlds.zoe.constants.data.location import (LOCATION_FROM_AP_CODE, ZOE_LOCATION_DATA_TABLE, ZOELOCATIONDATA)
 from worlds.zoe.constants.data.region import ZOE_REGION_DATA_TABLE
@@ -27,6 +27,7 @@ from worlds.zoe.constants.progress_flag import ZOEPROGRESSFLAG
 from worlds.zoe.constants.region import ZOEREGION, AREA_NAME_FROM_ID
 from worlds.zoe.constants.status import ZOESTATUS
 from worlds.zoe.constants.version import GAME_ID_TO_VERSION, ZOEVERSION
+from worlds.zoe.constants.configuration import ZOECONFIGURATION
 
 class ZoeInterface(GameInterface):
     """Handles reading and modifying the game memory"""
@@ -50,15 +51,26 @@ class ZoeInterface(GameInterface):
     class Options:
         """Data structure for storing options"""
         start_inventory_from_pool: dict[str, int]
-
         exclude_locations: set[str]
         deathlink: int
         filler_weight: dict[str, int]
+        weapons: int
+        enemy_counter: int
+        modules: int
+        local_server: int
+        infos: int
+        passcodes_loc: int
+        passcodes_item: int
+        vrtraining: int
+        weapons: int
+        traps_enabled: int
+        trap_weight: dict[str, int]
+        configuration: dict[str, int]
 
     UnlockItem: dict[str, UnlockData] = None
     options = Options
     timers: dict[str, float] = {}
-    planet: str = ZOEREGION.GLOBAL_HUB
+    area: str = ZOEREGION.GLOBAL_HUB
     new_planet: bool = True
     vehicle: int = 0
     health: int = 100
@@ -164,11 +176,20 @@ class ZoeInterface(GameInterface):
         """Process slot option data received when connecting to the server"""
         logger.debug(f"Processing options: {slot_data}")
         self.options.start_inventory_from_pool = slot_data[ZOEOPTION.START_INVENTORY_FROM_POOL]
-
+        self.options.modules = slot_data[ZOEOPTION.MODULES]
+        self.options.infos = slot_data[ZOEOPTION.INFOS]
+        self.options.trap_weight = slot_data[ZOEOPTION.TRAP_WEIGHT]
+        self.options.traps_enabled = slot_data[ZOEOPTION.ENABLE_TRAPS]
+        self.options.weapons = slot_data[ZOEOPTION.WEAPONS]
+        self.options.enemy_counter = slot_data[ZOEOPTION.ENEMY_COUNTER]
+        self.options.vrtraining = slot_data[ZOEOPTION.VRTRAINING]
+        self.options.local_servers = slot_data[ZOEOPTION.LOCAL_SERVERS]
+        self.options.passcodes_items = slot_data[ZOEOPTION.PASSCODES_ITEMS]
+        self.options.passcodes_locs = slot_data[ZOEOPTION.PASSCODES_LOCS]
+        self.options.configuration = slot_data[ZOEOPTION.CONFIGURATION]
         self.options.exclude_locations = slot_data[ZOEOPTION.EXCLUDE]
         self.options.deathlink = slot_data[ZOEOPTION.DEATHLINK]
         self.options.filler_weight = slot_data[ZOEOPTION.FILLER_WEIGHT]
-
 
     ########################################
     # Called on Game and Server Connection #
@@ -176,7 +197,6 @@ class ZoeInterface(GameInterface):
 
     def init(self):
         """Initialise values once the game and server are both connected"""
-        # Unlock state variables/ArmorUpgrade variable
         self.UnlockItem = {name: self.UnlockData() for name in ITEM_FROM_AP_CODE.values()}
         logger.debug(f"UnlockItem dict:{self.UnlockItem.keys()}")
 
@@ -204,9 +224,7 @@ class ZoeInterface(GameInterface):
         self.UnlockItem[ZOEITEM.TOWN_1].status = 1
         self.timers.clear()
         self.checked_locations.clear()
-        self.visited_areas.clear()
         self.module_cycler()
-        self.area_cycler()
         self.weapon_cycler()
         self.info_cycler()
         self.passcode_cycler()
@@ -242,7 +260,17 @@ class ZoeInterface(GameInterface):
         """Process any filler items received while offline"""
         logger.debug(f"Initial filler items: {self.initial_fillers} and data received: {data_received}")
         if not data_received:
-            logger.debug(f"No new offline filler items for {item} (stored: {stored_count}, current: {count})")
+            return
+        notification_message = ""
+        for item, count in self.initial_fillers.items():
+            stored_count = self.stored_fillers.get(item, 0)
+            if count > stored_count:
+                diff = count - stored_count
+                logger.debug(f"Processing {diff} offline filler items for {item}")
+                for _ in range(diff):
+                    self.item_received(ZOE_ITEM_DATA_TABLE[item].AP_CODE, None, None, 0)
+            else:
+                logger.debug(f"No new offline filler items for {item} (stored: {stored_count}, current: {count})")
         self.stored_fillers = self.initial_fillers.copy()
 
     def collect_locations(self, locations: set[str]) -> set[str]:
@@ -289,7 +317,22 @@ class ZoeInterface(GameInterface):
 
     def setup_settings(self):
         """Update in game settings based on the slot options"""
-        self._write8(ZOESTATUS.CONFIGURATION_BITFLAG, self.options.config)
+        if self.options.configuration.get(ZOECONFIGURATION.VIBRATION, False):
+            self._unwrite_bits(ZOESTATUS.CONFIGURATION_BITFLAG, {0})
+        if self.options.configuration.get(ZOECONFIGURATION.VIBRATION, True):
+            self._write_bits(ZOESTATUS.CONFIGURATION_BITFLAG, {0})
+        if self.options.configuration.get(ZOECONFIGURATION.CAPTION_DEMO, False):
+            self._unwrite_bits(ZOESTATUS.CONFIGURATION_BITFLAG, {1})
+        if self.options.configuration.get(ZOECONFIGURATION.CAPTION_DEMO, True):
+            self._write_bits(ZOESTATUS.CONFIGURATION_BITFLAG, {1})
+        if self.options.configuration.get(ZOECONFIGURATION.CAPTION_GAME, False):
+            self._unwrite_bits(ZOESTATUS.CONFIGURATION_BITFLAG, {2})
+        if self.options.configuration.get(ZOECONFIGURATION.CAPTION_GAME, True):
+            self._write_bits(ZOESTATUS.CONFIGURATION_BITFLAG, {2})
+        if self.options.configuration.get(ZOECONFIGURATION.SOUND, False):
+            self._unwrite_bits(ZOESTATUS.CONFIGURATION_BITFLAG, {3})
+        if self.options.configuration.get(ZOECONFIGURATION.SOUND, True):
+            self._write_bits(ZOESTATUS.CONFIGURATION_BITFLAG, {3})
 
     def init_stored_fillers(self):
         """Read the stored filler items from memory and fill the stored_fillers dictionary"""
@@ -306,12 +349,11 @@ class ZoeInterface(GameInterface):
         """Ran early in the update cycle, memory reads should happen here before any evaluations begin"""
         new_area = AREA_NAME_FROM_ID[self._read8(ZOESTATUS.CURRENT_AREA)]
         if self.area != new_area:
-            self.planet = new_area
+            self.area = new_area
             self.new_area = True
         else:
             self.new_area = False
         self.health = self._read8(ZOESTATUS.PLAYER_HEALTH)
-        self.max_health = self._read8(ZOESTATUS.PLAYER_HEALTH)
         self.level = self._read8(ZOESTATUS.PLAYER_LEVEL)
         self.equipped_weapon = self._read8(ZOESTATUS.EQUIPPED_WEAPON)
         self.jehuty_exp = self._read32(ZOESTATUS.PLAYER_EXPERIENCE)
@@ -326,7 +368,7 @@ class ZoeInterface(GameInterface):
                       other_player: str | None,
                       location: int):
         """Handle receiving items from the multiworld"""
-        name = PROG_TO_NAME_DICT.get(ITEM_FROM_AP_CODE[item_code], ITEM_FROM_AP_CODE[item_code])
+        name = NAME_DICT.get(ITEM_FROM_AP_CODE[item_code], ITEM_FROM_AP_CODE[item_code])
         if other_player is not None:
             classification = ZOE_ITEM_DATA_TABLE[name].AP_CLASSIFICATION
             if other_player == our_name:

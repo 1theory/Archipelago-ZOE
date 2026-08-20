@@ -192,6 +192,8 @@ weapon_data: dict[str, ZOEITEMDATA] = from_tag(ZOEITEMTAG.WEAPON)
 trap_data: dict[str, ZOEITEMDATA] = from_tag(ZOEITEMTAG.TRAP)
 unused_data: dict[str, ZOEITEMDATA] = from_tag(ZOEITEMTAG.UNUSED)
 
+NAME_DICT: dict[str, str] = dict(zip(weapon_data.keys()))
+
 item_counts: dict[str, int] = {
     **dict.fromkeys(weapon_data.keys(), 1),
     **dict.fromkeys(passcode_data.keys(), 1),

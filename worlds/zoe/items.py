@@ -42,8 +42,7 @@ def create_itempool(world: "ZoeWorld") -> list[Item]:
             if item_amount <= count:
                 continue
             item_amount -= count  # remove one from the pool as it has already been placed
-
-        # Vidcomics option
+            
         if ZOEITEMTAG.MODULE in item_tags and not options.modules.value:
             continue
 
