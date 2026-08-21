@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from BaseClasses import Item, ItemClassification
 from worlds.zoe.constants.data.item import (goal_data, area_data, item_counts, item_table, ZOEITEMDATA,
-                                            NAME_DICT,)
+                                            PROG_TO_NAME_DICT,)
 from worlds.zoe.constants.item_tags import ZOEITEMTAG
 from worlds.zoe.constants.items import ZOEITEM
 from worlds.zoe.constants.locations.general import ZOELOCATION

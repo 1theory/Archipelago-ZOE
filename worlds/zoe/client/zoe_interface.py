@@ -13,7 +13,7 @@ from worlds.zoe.client.general_interface import GameInterface
 from worlds.zoe.constants.check_type import CHECKTYPE
 #from worlds.zoe.constants.cutscene_flag import ZOECUTSCENEFLAG
 from worlds.zoe.constants.data.address import ZOEADDRESSDATA, SAVE_DATA
-from worlds.zoe.constants.data.item import (passcode_data, info_data, module_data, area_data, NAME_DICT,
+from worlds.zoe.constants.data.item import (passcode_data, info_data, module_data, area_data, PROG_TO_NAME_DICT,
                                              ITEM_FROM_AP_CODE, ITEM_NAME_FROM_ID, weapon_data, ZOE_ITEM_DATA_TABLE, timer_to_status)
 from worlds.zoe.constants.data.location import (LOCATION_FROM_AP_CODE, ZOE_LOCATION_DATA_TABLE, ZOELOCATIONDATA,)
 from worlds.zoe.constants.data.region import ZOE_REGION_DATA_TABLE
@@ -218,6 +218,12 @@ class ZoeInterface(GameInterface):
             return True
         return False
 
+    def check_pause(self):
+        """Check if the player has the game paused"""
+        if self._read8(ZOESTATUS.PAUSE_STATE) == 0x01:
+            return True
+        return False
+
     ##########################
     # Called on Loading File #
     ##########################
@@ -367,7 +373,7 @@ class ZoeInterface(GameInterface):
         self.health = self._read8(ZOESTATUS.PLAYER_HEALTH)
         self.level = self._read8(ZOESTATUS.PLAYER_LEVEL)
         self.equipped_weapon = self._read8(ZOESTATUS.EQUIPPED_WEAPON)
-        self.jehuty_exp = self._read32(ZOESTATUS.PLAYER_EXPERIENCE)
+        self.jehuty_exp = self._read16(ZOESTATUS.PLAYER_EXPERIENCE)
 
     #################
     # Receive Items #
@@ -379,17 +385,10 @@ class ZoeInterface(GameInterface):
                       other_player: str | None,
                       location: int):
         """Handle receiving items from the multiworld"""
-        name = NAME_DICT.get(ITEM_FROM_AP_CODE[item_code])
+        name = PROG_TO_NAME_DICT.get(ITEM_FROM_AP_CODE[item_code])
         
         logger.info(f"Item received: {ITEM_FROM_AP_CODE[item_code]}, AP code: {item_code}")
         logger.debug(f"Item received: {ITEM_FROM_AP_CODE[item_code]}, AP code: {item_code}")
-
-        if name in area_data.keys():
-            if self.UnlockItem[name].status:
-                return
-            self.UnlockItem[name].status = 1
-        else:
-            self.UnlockItem[name].status += 1
             
         match name:                    
                 case ZOEITEM.JEHUTY_EXP:
@@ -398,10 +397,10 @@ class ZoeInterface(GameInterface):
                     new_exp = exp + exp_gain
                     if new_exp > 0xFFFF:
                         new_exp = 0xFFFF
-                    self._write16(exp, new_exp)
+                    self._write16(ZOESTATUS.PLAYER_EXPERIENCE, new_exp)
                     logger.info(f"Experience received: {exp_gain}, experience updated to {exp}")
                     jehuty_exp_packs = self._read8(ZOESTATUS.JEHUTY_EXP_PACKS)
-                    if jehuty_exp_packs < 0xFF:
+                    if jehuty_exp_packs <= 0xFF:
                         jehuty_exp_packs += 1
                     self._write8(ZOESTATUS.JEHUTY_EXP_PACKS, jehuty_exp_packs)
                 case ZOEITEM.LEVEL_UP:
@@ -509,7 +508,7 @@ class ZoeInterface(GameInterface):
     def can_be_killed(self) -> bool:
         """Checks if the player can be killed based on the current game state."""
         current_time = time.time()
-        if self.self.main_menu is True or ZOESTATUS.STAND_BY_STATE != 0:
+        if self.self.main_menu is True or ZOESTATUS.STAND_BY_STATE != 0 or ZOESTATUS.PAUSE_STATE != 0:
             self.deathlink_grace_period = current_time
         if current_time - self.deathlink_grace_period < 1:
             return False
@@ -544,7 +543,7 @@ class ZoeInterface(GameInterface):
         self.weapon_cycler()
         self.info_cycler()
         self.passcode_cycler()
-        self.overflow_fix()
+        #self.overflow_fix()
         self.respawn_local_servers()
         self.timer_cycler()
 
