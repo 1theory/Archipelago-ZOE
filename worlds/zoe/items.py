@@ -4,7 +4,8 @@ from logging import DEBUG, getLogger
 from typing import TYPE_CHECKING
 
 from BaseClasses import Item, ItemClassification
-from worlds.zoe.constants.data.item import (goal_data, area_data, item_counts, item_table, ZOEITEMDATA)
+from worlds.zoe.constants.data.item import (goal_data, area_data, item_counts, item_table, ZOEITEMDATA,
+                                            NAME_DICT,)
 from worlds.zoe.constants.item_tags import ZOEITEMTAG
 from worlds.zoe.constants.items import ZOEITEM
 from worlds.zoe.constants.locations.general import ZOELOCATION
@@ -42,14 +43,19 @@ def create_itempool(world: "ZoeWorld") -> list[Item]:
             if item_amount <= count:
                 continue
             item_amount -= count  # remove one from the pool as it has already been placed
-            
+
+        if ZOEITEMTAG.INFO in item_tags and not options.infos.value:
+            continue
+        if ZOEITEMTAG.WEAPON in item_tags and not options.weapons.value:
+            continue
         if ZOEITEMTAG.MODULE in item_tags and not options.modules.value:
             continue
-
+        if ZOEITEMTAG.PASSCODE in item_tags and not options.passcodes_items.value:
+            continue
         # Catch accidental duplicates
-        if item_amount is None:
+        #if item_amount is None:
             zoe_logger.warning(f"{name} has an incorrect amount count")
-        else:
+        #else:
             if item_amount > 1:
                 zoe_logger.warning(f"multiple copies of {name} added to the item pool")
             itempool += create_multiple_items(world, name, item_amount, item_type)

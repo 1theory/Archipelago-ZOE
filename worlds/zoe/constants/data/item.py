@@ -164,7 +164,7 @@ ZOE_ITEM_DATA_TABLE: dict[str, ZOEITEMDATA] = {
     ZOEITEM.PASS_GAUNTLET: ZOEITEMDATA.construct_passcode(0x16, 6),
     ZOEITEM.PASS_SNIPER: ZOEITEMDATA.construct_unused(0x17),
     ZOEITEM.PASS_DECOY1: ZOEITEMDATA.construct_passcode(0x18, 7, ItemClassification.progression),
-    ZOEITEM.PASS_DECOY2: ZOEITEMDATA.construct_passcode_2(0x19, 0, ItemClassification.progression),
+    ZOEITEM.PASS_DECOY2: ZOEITEMDATA.construct_passcode(0x19, 0, ItemClassification.progression),
     ZOEITEM.PASS_MUMMY: ZOEITEMDATA.construct_unused(0x1A),
     ZOEITEM.PASS_GLOBAL: ZOEITEMDATA.construct_passcode(0x1B, 2, ItemClassification.progression),
     ZOEITEM.PASS_CONTROL1: ZOEITEMDATA.construct_passcode(0x1C, 3, ItemClassification.progression),
@@ -223,7 +223,7 @@ weapon_data: dict[str, ZOEITEMDATA] = from_tag(ZOEITEMTAG.WEAPON)
 trap_data: dict[str, ZOEITEMDATA] = from_tag(ZOEITEMTAG.TRAP)
 unused_data: dict[str, ZOEITEMDATA] = from_tag(ZOEITEMTAG.UNUSED)
 
-NAME_DICT: dict[str, str] = dict(zip(weapon_data.keys()))
+NAME_DICT: dict[str, str] = dict.fromkeys(weapon_data.keys())
 
 item_counts: dict[str, int] = {
     **dict.fromkeys(weapon_data.keys(), 1),

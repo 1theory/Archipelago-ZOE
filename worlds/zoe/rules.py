@@ -55,6 +55,8 @@ def set_rules(world: "ZoeWorld"):
 
         ZOELOCATION.FACTORY_1_FLY_AWAY:
             lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.PASS_GLOBAL], world.player),
+        ZOELOCATION.TOWN_1_TEMPEST:
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.PASS_GLOBAL], world.player)
     }
 
     for region in world.multiworld.get_regions(world.player):
@@ -63,5 +65,4 @@ def set_rules(world: "ZoeWorld"):
     for location in world.get_locations():
         add_rule(location, rules_dict.get(location.name, lambda _: True))
 
-    # world.multiworld.completion_condition[world.player] = lambda state: state.has(ZOEITEM.VICTORY, world.player)
     world.multiworld.completion_condition[world.player] = lambda state: state.has(ZOEITEM.VICTORY, world.player)
