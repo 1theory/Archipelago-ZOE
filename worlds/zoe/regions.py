@@ -82,7 +82,7 @@ def should_skip_location(data: ZOELOCATIONDATA, options: type[ZoeOptions]) -> bo
             case ZOETAG.NOT_IMPLEMENTED:  # Skip all locations not yet implemented
                 return True
             case ZOETAG.LOCAL_SERVERS:
-                if not options.local_servers.value:  # Skip servers locations if servers are disabled
+                if not options.local_server.value:  # Skip servers locations if servers are disabled
                     return True
             case ZOETAG.PASSCODES:
                 if not options.passcodes_locs.value:
