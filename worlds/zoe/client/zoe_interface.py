@@ -531,17 +531,29 @@ class ZoeInterface(GameInterface):
     def late_update(self):
         """Ran at the end of the main loop to update any memory values based on collection state"""
         #self.area_cycler()
-        self.overflow_fix()
         self.module_cycler()
         self.weapon_cycler()
         self.info_cycler()
         self.passcode_cycler()
-        self.local_server_cycler()
+        self.overflow_fix()
+        self.respawn_local_servers()
         self.timer_cycler()
 
     def module_cycler(self):
         """Cycles through each module and updates their state"""
         if self.options.modules.value:
+
+            READ_MONITOR_MODULE = ZOEFUNCTION.READ_MONITOR_MODULE_NTSC
+            READ_FLIGHT_MODULE = ZOEFUNCTION.READ_FLIGHT_MODULE_NTSC
+            if self.UnlockItem[ZOEITEM.MONITOR_FCMD].status is 0:
+                self._write32(READ_MONITOR_MODULE, 0x8C820B24)
+            else:
+                self._write32(READ_MONITOR_MODULE, 0x8C820024)
+            if self.UnlockItem[ZOEITEM.GLOBAL_FCMD].status is 0:
+                self._write32(READ_FLIGHT_MODULE, 0x8C820B24)
+            else:
+                self._write32(READ_FLIGHT_MODULE, 0x8C820024)
+
             for name in module_data.keys():
                 bit = module_data[name].BITSET
                 if self.UnlockItem[name].status:
@@ -554,19 +566,32 @@ class ZoeInterface(GameInterface):
                     self._unwrite_bits(ZOESTATUS.OBTAINED_MODULES, {bit})
 
     def weapon_cycler(self):
-        """Cycles through each weapon and updates their state"""
+        """Interval update function: Check unlock/lock status of weapons"""
         if self.options.weapons.value:
             for name in weapon_data.keys():
-                bit = weapon_data[name].BITSET
+                bit_set = weapon_data[name].BITSET
                 ammo_addr = weapon_data[name].AMMO_ADDRESS
                 if self.UnlockItem[name].status:
-                    if self.UnlockItem[name.unlock_delay]:
-                        self._write_bits(ZOESTATUS.OBTAINED_WEAPONS, {bit})
+                    if self.UnlockItem[name].unlock_delay:
+                        self._write_bits(ZOESTATUS.OBTAINED_WEAPONS, {bit_set})
                         self.UnlockItem[name].unlock_delay = 0
                     else:
                         self.UnlockItem[name].unlock_delay += 1
+                    if name == ZOEITEM.DECOY or ZOEITEM.MUMMY:
+                        if self.UnlockItem[name].unlock_delay:
+                            self._write_bits(ZOESTATUS.OBTAINED_MODULES, {bit_set})
+                            self.UnlockItem[name].unlock_delay = 0
+                        else:
+                            self.UnlockItem[name].unlock_delay += 1
                 else:
-                    self._unwrite_bits(ZOESTATUS.OBTAINED_WEAPONS, {bit})
+                    # Prevent the player from using locked weapons
+                    if name != ZOEITEM.DECOY or ZOEITEM.MUMMY:
+                        self._unwrite_bits(ZOESTATUS.OBTAINED_WEAPONS, {bit_set})
+                        self._write8(ammo_addr, 0)
+                    if name == ZOEITEM.DECOY or ZOEITEM.MUMMY:
+                        if self.UnlockItem[name].status is 0:
+                            self._unwrite_bits(ZOESTATUS.OBTAINED_MODULES, {bit_set})
+                            self._write8(ammo_addr, 0)
 
     def info_cycler(self):
         """Cycles through each info and updates their state"""
@@ -583,8 +608,10 @@ class ZoeInterface(GameInterface):
                     self._unwrite_bits(ZOESTATUS.OBTAINED_INFO, {bit})
 
     def passcode_cycler(self):
-        """Cycles through each passcode item and updates their state"""
+        """Cycles through each passcode item and location and updates their state"""
         if self.options.passcodes_item.value:
+            WRITE_PASSCODES = ZOEFUNCTION.WRITE_PASSCODES_NTSC
+            self._write32(WRITE_PASSCODES, 0xACA20B1C)
             for name in passcode_data.keys():
                 bit = passcode_data[name].BITSET
                 if self.UnlockItem[name].status:
@@ -593,8 +620,23 @@ class ZoeInterface(GameInterface):
                         self.UnlockItem[name].unlock_delay = 0
                     else:
                         self.UnlockItem[name].unlock_delay += 1
+                    if name == (ZOEITEM.PASS_DECOY2 or ZOEITEM.PASS_GLOBAL or
+                                ZOEITEM.PASS_CONTROL1 or ZOEITEM.PASS_CONTROL2 or
+                                ZOEITEM.PASS_VACCINE or ZOEITEM.PASS_ANTILLIA):
+                        if self.UnlockItem[name.unlock_delay]:
+                             self._write_bits(ZOESTATUS.OBTAINED_PASSCODES_2, {bit})
+                             self.UnlockItem[name].unlock_delay = 0
+                        else:
+                            self.UnlockItem[name].unlock_delay += 1
+                        
                 else:
-                    self._unwrite_bits(ZOESTATUS.OBTAINED_PASSCODES, {bit})
+                    if name == (ZOEITEM.PASS_DECOY2 or ZOEITEM.PASS_GLOBAL or
+                                ZOEITEM.PASS_CONTROL1 or ZOEITEM.PASS_CONTROL2 or
+                                ZOEITEM.PASS_VACCINE or ZOEITEM.PASS_ANTILLIA):
+                        self._unwrite_bits(ZOESTATUS.OBTAINED_PASSCODES_2, {bit})
+                    else:
+                        self._unwrite_bits(ZOESTATUS.OBTAINED_PASSCODES, {bit})
+
 
     def overflow_fix(self):
         """Detect any integer overflows and reset the value"""
@@ -627,7 +669,15 @@ class ZoeInterface(GameInterface):
 
     def respawn_local_servers(self):
         """Respawn local servers if the associated location isn't checked but the local server's associated program is unlocked through AP"""
-        if (self.UnlockItem[ZOEITEM.MONITOR_FCMD].status
-            and ZOELOCATION.FACTORY_1_SCOUTING_MODULE_LOCAL_SERVER not in self.checked_locations
-            and self.area == ZOEREGION.FACTORY_1):
-            self._unwrite_bits(ZOESTATUS.OBTAINED_MODULES, ZOEITEM.MONITOR_FCMD.BITSET)
+        if self.options.local_server.value:
+            if (self.UnlockItem[ZOEITEM.MONITOR_FCMD].status
+                and ZOELOCATION.FACTORY_1_SCOUTING_MODULE_LOCAL_SERVER not in self.checked_locations
+                and self.area == ZOEREGION.FACTORY_1):
+                self._write32(ZOEFUNCTION.READ_MODULES_NTSC, 0x8C820C24)
+
+            if (self.UnlockItem[ZOEITEM.GLOBAL_FCMD].status
+                and ZOELOCATION.FACTORY_1_FLIGHT_MODULE_LOCAL_SERVER not in self.checked_locations
+                and self.area == ZOEREGION.FACTORY_1):
+                self._write32(ZOEFUNCTION.READ_MODULES_NTSC, 0x8C820C24)
+                self._write32(ZOEFUNCTION.READ_BLOCKED_MODULES_NTSC, 0x8C620C24)
+
