@@ -180,7 +180,8 @@ async def _handle_game_ready(ctx: "Context") -> None:
 #            logger.info("Setting up codecave...")
 #            ctx.code_cave_setup = False
 #            await handle_codecave(ctx)
-            logger.info("Game READY! Credits to: Taoshi, Myth197 and yuxia228 for putting together the code that I based this client on.")
+            logger.info("Game READY! " \
+            "Credits to: Taoshi, Myth197 and yuxia228 for putting together the original code on which I based this client on.")
 
         if not ctx.main_menu:
             ctx.game_interface.cycle_reads_count = 0
@@ -219,8 +220,6 @@ async def update(ctx: "Context") -> None:
     await handle_check_goal(ctx)
     # Check area id
     await handle_area_changed(ctx)
-    # Check sequence breaks
-    await handle_sequence_break(ctx)
     ctx.game_interface.late_update()
     # Save to the server
     await handle_save(ctx)
@@ -308,16 +307,7 @@ async def handle_area_changed(ctx: "Context") -> None:
         return
     # Player visits a new planet/region
     if ctx.game_interface.new_area:
-        return
-        # Changing planet counts as a reload.
-
-
-async def handle_sequence_break(ctx: "Context") -> None:
-    """Undoes the flags for locations when sequence breaking if you haven't checked the corresponding location
-    yet"""
-    if ctx.slot_data is None:
-        return
-    ctx.game_interface.sequence_break()
+        return   
 
 
 async def handle_save(ctx: "Context") -> None:

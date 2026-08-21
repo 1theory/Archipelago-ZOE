@@ -14,8 +14,8 @@ from worlds.zoe.constants.check_type import CHECKTYPE
 #from worlds.zoe.constants.cutscene_flag import ZOECUTSCENEFLAG
 from worlds.zoe.constants.data.address import ZOEADDRESSDATA, SAVE_DATA
 from worlds.zoe.constants.data.item import (passcode_data, info_data, module_data, area_data, NAME_DICT,
-                                             ITEM_FROM_AP_CODE, ITEM_NAME_FROM_ID, weapon_data, ZOE_ITEM_DATA_TABLE)
-from worlds.zoe.constants.data.location import (LOCATION_FROM_AP_CODE, ZOE_LOCATION_DATA_TABLE, ZOELOCATIONDATA,  timer_to_status)
+                                             ITEM_FROM_AP_CODE, ITEM_NAME_FROM_ID, weapon_data, ZOE_ITEM_DATA_TABLE, timer_to_status)
+from worlds.zoe.constants.data.location import (LOCATION_FROM_AP_CODE, ZOE_LOCATION_DATA_TABLE, ZOELOCATIONDATA,)
 from worlds.zoe.constants.data.region import ZOE_REGION_DATA_TABLE
 from worlds.zoe.constants.functions import ZOEFUNCTION 
 from worlds.zoe.constants.item_tags import ZOEITEMTAG
@@ -60,7 +60,7 @@ class ZoeInterface(GameInterface):
         local_server: int
         infos: int
         passcodes_loc: int
-        passcodes_item: int
+        passcodes_items: int
         vrtraining: int
         weapons: int
         traps_enabled: int
@@ -168,6 +168,18 @@ class ZoeInterface(GameInterface):
 
         return self._write8(address, write)
 
+    def address_convert(self, address: int):
+        """Address conversion from str to int, and for version correction (with US/JP/EU)"""
+        _addr = address
+        if isinstance(address, str):
+            _addr = int(address, 0)
+#        if (0x001DC7C0 <= _addr <= 0x00300000
+#            and self.current_game == ZOEVERSION.EU_ID):
+#            _addr += GAME_ID_TO_OFFSET[ZOEVERSION.EU_ID]
+#        if self.current_game == ZOEVERSION.JP_ID:
+#            _addr = jp_convert_address(_addr, self.area)
+        return _addr
+
     ###############################
     # Called on Server Connection #
     ###############################
@@ -183,7 +195,7 @@ class ZoeInterface(GameInterface):
         self.options.weapons = slot_data[ZOEOPTION.WEAPONS]
         self.options.enemy_counter = slot_data[ZOEOPTION.ENEMY_COUNTER]
         self.options.vrtraining = slot_data[ZOEOPTION.VRTRAINING]
-        self.options.local_servers = slot_data[ZOEOPTION.LOCAL_SERVERS]
+        self.options.local_server = slot_data[ZOEOPTION.LOCAL_SERVERS]
         self.options.passcodes_items = slot_data[ZOEOPTION.PASSCODES_ITEMS]
         self.options.passcodes_locs = slot_data[ZOEOPTION.PASSCODES_LOCS]
         self.options.configuration = slot_data[ZOEOPTION.CONFIGURATION]
@@ -222,13 +234,13 @@ class ZoeInterface(GameInterface):
         self.UnlockItem[ZOEITEM.HANGAR_1].status = 1
         self.UnlockItem[ZOEITEM.FACTORY_1].status = 1
         self.UnlockItem[ZOEITEM.TOWN_1].status = 1
+        self.UnlockItem[ZOEITEM.GLOBAL_HUB].status = 1
         self.timers.clear()
         self.checked_locations.clear()
         self.module_cycler()
         self.weapon_cycler()
         self.info_cycler()
         self.passcode_cycler()
-        self.local_server_cycler()
         self.timer_cycler()
 
     def undo_collections(self):
@@ -261,7 +273,6 @@ class ZoeInterface(GameInterface):
         logger.debug(f"Initial filler items: {self.initial_fillers} and data received: {data_received}")
         if not data_received:
             return
-        notification_message = ""
         for item, count in self.initial_fillers.items():
             stored_count = self.stored_fillers.get(item, 0)
             if count > stored_count:
@@ -369,61 +380,59 @@ class ZoeInterface(GameInterface):
                       location: int):
         """Handle receiving items from the multiworld"""
         name = NAME_DICT.get(ITEM_FROM_AP_CODE[item_code])
-        if other_player is not None:
-            classification = ZOE_ITEM_DATA_TABLE[name].AP_CLASSIFICATION
-            if other_player == our_name:
-                if location == 0:
-                    pass
-                elif location > 0:
-                    pass
+        
+        logger.info(f"Item received: {ITEM_FROM_AP_CODE[item_code]}, AP code: {item_code}")
         logger.debug(f"Item received: {ITEM_FROM_AP_CODE[item_code]}, AP code: {item_code}")
+
         if name in area_data.keys():
             if self.UnlockItem[name].status:
                 return
+            self.UnlockItem[name].status = 1
+        else:
             self.UnlockItem[name].status += 1
-
+            
         match name:                    
-            case ZOEITEM.JEHUTY_EXP:
-                if not self.jehuty_exp:
-                    self.jehuty_exp = self._read32(ZOESTATUS.PLAYER_EXPERIENCE)
-                exp_gain = min(200, max(200, int(self.jehuty_exp * 0.15)))
-                self.jehuty_exp += exp_gain
-                if self.jehuty_exp > 0x7FFFFFFF:
-                    self.jehuty_exp = 0x7FFFFFFF
-                self._write32(ZOESTATUS.PLAYER_EXPERIENCE, self.jehuty_exp)
-                jehuty_exp_packs = self._read8(ZOESTATUS.JEHUTY_EXP_PACKS)
-                if jehuty_exp_packs < 0xFF:
-                    jehuty_exp_packs += 1
-                self._write8(ZOESTATUS.JEHUTY_EXP_PACKS, jehuty_exp_packs)
-            case ZOEITEM.LEVEL_UP:
-                self.player_level = self._read8(ZOESTATUS.PLAYER_LEVEL)
-                lvl_gain = self.player_level + 1
-                if level_packs < 0xFF:
-                    level_packs += 1
-                self._write8(self.player_level, lvl_gain)
-                self._write8(ZOESTATUS.LEVEL_PACKS, level_packs)
-            case ZOEITEM.EXTRA_AMMO:
-                pass
-#                ammo_pack = self.current_ammo + 5
-#                for weapon_name in weapon_data.keys():
-#                    if self.UnlockItem[weapon_name].status:
-#                        self._write32(weapon_data[weapon_name].AMMO_ADDRESS, ammo_pack)
-            case ZOEITEM.ROTATION_TRAP:
-                if self.timers.get(name, False):
-                    self.timers[name] += randint(6, 15)
-                else:
-                    self.timers[name] = int(time.time() + uniform(6, 15))
-                    
+                case ZOEITEM.JEHUTY_EXP:
+                    exp = self._read16(ZOESTATUS.PLAYER_EXPERIENCE)
+                    exp_gain = min(5, max(20))
+                    new_exp = exp + exp_gain
+                    if new_exp > 0xFFFF:
+                        new_exp = 0xFFFF
+                    self._write16(exp, new_exp)
+                    logger.info(f"Experience received: {exp_gain}, experience updated to {exp}")
+                    jehuty_exp_packs = self._read8(ZOESTATUS.JEHUTY_EXP_PACKS)
+                    if jehuty_exp_packs < 0xFF:
+                        jehuty_exp_packs += 1
+                    self._write8(ZOESTATUS.JEHUTY_EXP_PACKS, jehuty_exp_packs)
+                case ZOEITEM.LEVEL_UP:
+                    player_level = self._read8(ZOESTATUS.PLAYER_LEVEL)
+                    lvl_gain = player_level + 1
+                    if level_packs < 0x0A:
+                        level_packs += 1
+                    self._write8(player_level, lvl_gain)
+                    self._write8(ZOESTATUS.LEVEL_PACKS, level_packs)
+                case ZOEITEM.EXTRA_AMMO:
+                    pass
+    #                ammo_pack = self.current_ammo + 5
+    #                for weapon_name in weapon_data.keys():
+    #                    if self.UnlockItem[weapon_name].status:
+    #                        self._write32(weapon_data[weapon_name].AMMO_ADDRESS, ammo_pack)
+                case ZOEITEM.ROTATION_TRAP:
+                    if self.timers.get(name, False):
+                        self.timers[name] += randint(6, 15)
+                    else:
+                        self.timers[name] = int(time.time() + uniform(6, 15))
+                        
         if name in weapon_data.keys():
-            if weapon_data[name].AMMO:
-                self._write32(weapon_data[name].AMMO_ADDRESS, weapon_data[name].AMMO)
+                    if weapon_data[name].AMMO:
+                        self._write8(weapon_data[name].AMMO_ADDRESS, weapon_data[name].AMMO)
         if name in weapon_data.keys() and self.UnlockItem[name].status == 1:
-            self.update_equip(name)
+                    self.update_equip(name)
 
     def update_equip(self, name: str):
-        """Equip the most recently collected weapon/gadget, update recent uses"""
+            """Equip the most recently collected weapon/gadget, update recent uses"""
 
-        self._write8(ZOESTATUS.EQUIPPED_WEAPON, weapon_data[name].EQUIP)
+            self._write8(ZOESTATUS.EQUIPPED_WEAPON, weapon_data[name].EQUIP)
 
     ###################
     # Check Locations #
@@ -541,15 +550,14 @@ class ZoeInterface(GameInterface):
 
     def module_cycler(self):
         """Cycles through each module and updates their state"""
-        if self.options.modules.value:
-
+        if self.options.modules is True:
             READ_MONITOR_MODULE = ZOEFUNCTION.READ_MONITOR_MODULE_NTSC
             READ_FLIGHT_MODULE = ZOEFUNCTION.READ_FLIGHT_MODULE_NTSC
-            if self.UnlockItem[ZOEITEM.MONITOR_FCMD].status is 0:
+            if self.UnlockItem[ZOEITEM.MONITOR_FCMD].status == 0:
                 self._write32(READ_MONITOR_MODULE, 0x8C820B24)
             else:
                 self._write32(READ_MONITOR_MODULE, 0x8C820024)
-            if self.UnlockItem[ZOEITEM.GLOBAL_FCMD].status is 0:
+            if self.UnlockItem[ZOEITEM.GLOBAL_FCMD].status == 0:
                 self._write32(READ_FLIGHT_MODULE, 0x8C820B24)
             else:
                 self._write32(READ_FLIGHT_MODULE, 0x8C820024)
@@ -567,7 +575,7 @@ class ZoeInterface(GameInterface):
 
     def weapon_cycler(self):
         """Interval update function: Check unlock/lock status of weapons"""
-        if self.options.weapons.value:
+        if self.options.weapons is True:
             for name in weapon_data.keys():
                 bit_set = weapon_data[name].BITSET
                 ammo_addr = weapon_data[name].AMMO_ADDRESS
@@ -589,13 +597,13 @@ class ZoeInterface(GameInterface):
                         self._unwrite_bits(ZOESTATUS.OBTAINED_WEAPONS, {bit_set})
                         self._write8(ammo_addr, 0)
                     if name == ZOEITEM.DECOY or ZOEITEM.MUMMY:
-                        if self.UnlockItem[name].status is 0:
+                        if self.UnlockItem[name].status == 0:
                             self._unwrite_bits(ZOESTATUS.OBTAINED_MODULES, {bit_set})
                             self._write8(ammo_addr, 0)
 
     def info_cycler(self):
         """Cycles through each info and updates their state"""
-        if self.options.info.value:
+        if self.options.infos is True:
             for name in info_data.keys():
                 bit = info_data[name].BITSET
                 if self.UnlockItem[name].status:
@@ -609,7 +617,7 @@ class ZoeInterface(GameInterface):
 
     def passcode_cycler(self):
         """Cycles through each passcode item and location and updates their state"""
-        if self.options.passcodes_item.value:
+        if self.options.passcodes_items is True:
             WRITE_PASSCODES = ZOEFUNCTION.WRITE_PASSCODES_NTSC
             self._write32(WRITE_PASSCODES, 0xACA20B1C)
             for name in passcode_data.keys():
@@ -669,7 +677,7 @@ class ZoeInterface(GameInterface):
 
     def respawn_local_servers(self):
         """Respawn local servers if the associated location isn't checked but the local server's associated program is unlocked through AP"""
-        if self.options.local_server.value:
+        if self.options.local_server is True:
             if (self.UnlockItem[ZOEITEM.MONITOR_FCMD].status
                 and ZOELOCATION.FACTORY_1_SCOUTING_MODULE_LOCAL_SERVER not in self.checked_locations
                 and self.area == ZOEREGION.FACTORY_1):
@@ -681,3 +689,16 @@ class ZoeInterface(GameInterface):
                 self._write32(ZOEFUNCTION.READ_MODULES_NTSC, 0x8C820C24)
                 self._write32(ZOEFUNCTION.READ_BLOCKED_MODULES_NTSC, 0x8C620C24)
 
+    def update_save(self) -> dict[int, tuple[int, int]]:
+        """Check if the game save is different to the server"""
+        save: dict[int, tuple[int, int]] = {}
+        for data in SAVE_DATA:
+            match data.TYPE:
+                case CHECKTYPE.BYTE:
+                    save[data.ADDRESS] = (data.TYPE, self._read8(data.ADDRESS))
+                case CHECKTYPE.SHORT:
+                    save[data.ADDRESS] = (data.TYPE, self._read16(data.ADDRESS))
+                case CHECKTYPE.INT:
+                    save[data.ADDRESS] = (data.TYPE, self._read32(data.ADDRESS))
+
+        return save

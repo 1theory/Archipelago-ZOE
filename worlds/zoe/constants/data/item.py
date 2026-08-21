@@ -89,7 +89,7 @@ class ZOEITEMDATA:
                          bitset: int,
                          ap_classification: ItemClassification = ItemClassification.progression_skip_balancing,
                          tags: list[str] | None = None):
-        """Construct a weapon item"""
+        """Construct a module item"""
         address: int = ZOESTATUS.OBTAINED_MODULES
         bitset: int
         all_tags: list[str] = [ZOEITEMTAG.MODULE]
@@ -129,6 +129,16 @@ class ZOEITEMDATA:
                        address: int = 0):
         """Construct a trap item"""
         return ZOEITEMDATA(idx, address, ap_classification=ItemClassification.trap, tags=[ZOEITEMTAG.TRAP])
+
+    @staticmethod
+    def construct_area(idx: int,
+                        address: int = 0, 
+                        tags: list[str] | None = None):
+        """Construct the area item"""
+        all_tags: list[str] = [ZOEITEMTAG.AREA]
+        if tags is not None:
+            all_tags.extend(tags)
+        return ZOEITEMDATA(idx, address, tags=[ZOEITEMTAG.AREA])
 
     @staticmethod
     def construct_other(idx: int,
@@ -189,6 +199,10 @@ ZOE_ITEM_DATA_TABLE: dict[str, ZOEITEMDATA] = {
     ZOEITEM.INFO_G_INF: ZOEITEMDATA.construct_unused(0x2C),
     ZOEITEM.INFO_H_INF: ZOEITEMDATA.construct_unused(0x2D),
     # Areas
+    ZOEITEM.HANGAR_1: ZOEITEMDATA.construct_area(0x40),
+    ZOEITEM.FACTORY_1: ZOEITEMDATA.construct_area(0x41),
+    ZOEITEM.TOWN_1: ZOEITEMDATA.construct_area(0x42),
+    ZOEITEM.GLOBAL_HUB: ZOEITEMDATA.construct_area(0x43),
     # Filler
     ZOEITEM.JEHUTY_EXP: ZOEITEMDATA.construct_other(0x2E),
     ZOEITEM.LEVEL_UP: ZOEITEMDATA.construct_other(0x2F),
@@ -250,6 +264,7 @@ timer_to_status: dict[str, int] = {
 
 item_groups: dict[str, set[str]] = {
     ZOEITEMTAG.FILLER: set(filler_data.keys()),
+    ZOEITEMTAG.AREA: set(area_data.keys()),
     ZOEITEMTAG.MODULE: set(module_data.keys()),
     ZOEITEMTAG.PASSCODE: set(passcode_data.keys()),
     ZOEITEMTAG.GOAL: set(goal_data.keys()),

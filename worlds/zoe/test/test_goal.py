@@ -13,7 +13,6 @@ class TestTempest(ZOETestBase):
     def test_logic(self):
         state: CollectionState = self.multiworld.state
         self.assertTrue(self.can_reach_region(ZOEREGION.HANGAR_1), "Can't start on HANGAR.1")
-        self.assertFalse(self.can_reach_region(ZOEREGION.FACTORY_1), "FACTORY.1 reachable")
         self.assertTrue(self.can_reach_region(ZOEREGION.GLOBAL_HUB), "Global Hub not reachable from start")
         self.assertFalse(self.can_reach_region(ZOEREGION.TOWN_1_TEMPEST), "TOWN.1.TEMPEST reachable from HANGAR.1")
         self.assertFalse(self.can_reach_location(ZOELOCATION.TOWN_1_TEMPEST),

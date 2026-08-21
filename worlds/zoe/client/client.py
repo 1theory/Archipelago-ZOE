@@ -19,18 +19,14 @@ from worlds.zoe.constants.options import ZOEOPTION
 from worlds.zoe.constants.region import ZOEREGION
 
 # Load Universal Tracker modules with aliases
-tracker_loaded: bool = False
-try:
+#tracker_loaded: bool = False
+#try:
     # noinspection PyUnusedImports
-    from worlds.tracker.TrackerClient import (TrackerCommandProcessor as ClientCommandProcessor,
-                                              TrackerGameContext as CommonContext, UT_VERSION)
-
-    tracker_loaded = True
-except ImportError:
-    from CommonClient import ClientCommandProcessor, CommonContext
-
-    print("ERROR: Universal Tracker is not loaded")
-
+#    from worlds.tracker.TrackerClient import (TrackerCommandProcessor as ClientCommandProcessor,
+                                            #  TrackerGameContext as CommonContext, UT_VERSION)
+#    tracker_loaded = True
+from CommonClient import ClientCommandProcessor, CommonContext
+print("ERROR: Universal Tracker is not loaded")
 class CommandProcessor(ClientCommandProcessor):
     def verify(self, level: int = 4) -> bool:
         """
@@ -85,6 +81,15 @@ class CommandProcessor(ClientCommandProcessor):
                 self.output("Already Connected to Emulator")
             else:
                 self.ctx.game_interface.connect_to_game()
+
+    def _cmd_exp_test(self):
+        """Give experience for testing purposes."""
+        if not self.verify():
+            return
+        if isinstance(self.ctx, ZoeContext) and self.ctx.slot is not None:
+            self.ctx.game_interface.item_received(ZOE_ITEM_DATA_TABLE[ZOEITEM.JEHUTY_EXP].AP_CODE,
+                                                  self.ctx.player_names[self.ctx.slot], "Test Command", 0)
+            self.output("Experience received")
 
     def _cmd_zoe_info(self):
         """Dump Zoe info for debugging purposes."""
@@ -141,8 +146,8 @@ class ZoeContext(CommonContext):
     def make_gui(self):
         ui = super().make_gui()
         ui.base_title = f"{ZOEOPTION.GAME_TITLE} Client v{ZOEOPTION.VERSION_NUMBER}"
-        if tracker_loaded:
-            ui.base_title += f" | Universal Tracker {UT_VERSION}"
+     #   if tracker_loaded:
+     #       ui.base_title += f" | Universal Tracker {UT_VERSION}"
 
         # AP version is added behind this automatically
         ui.base_title += " | Archipelago"
@@ -219,11 +224,11 @@ def launch_client():
         ctx.server_task = create_task(server_loop(ctx), name="Server Loop")
 
         # Runs Universal Tracker's internal generator
-        if tracker_loaded:
-            ctx.run_generator()
-            ctx.tags.remove("Tracker")
-        else:
-            logger.warning("Could not find Universal Tracker.")
+      #  if tracker_loaded:
+      #      ctx.run_generator()
+      #      ctx.tags.remove("Tracker")
+      #  else:
+      #      logger.warning("Could not find Universal Tracker.")
 
         if gui_enabled:
             ctx.run_gui()
