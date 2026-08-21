@@ -15,7 +15,7 @@ from worlds.zoe.constants.check_type import CHECKTYPE
 from worlds.zoe.constants.data.address import ZOEADDRESSDATA, SAVE_DATA
 from worlds.zoe.constants.data.item import (passcode_data, info_data, module_data, area_data, NAME_DICT,
                                              ITEM_FROM_AP_CODE, ITEM_NAME_FROM_ID, weapon_data, ZOE_ITEM_DATA_TABLE)
-from worlds.zoe.constants.data.location import (LOCATION_FROM_AP_CODE, ZOE_LOCATION_DATA_TABLE, ZOELOCATIONDATA)
+from worlds.zoe.constants.data.location import (LOCATION_FROM_AP_CODE, ZOE_LOCATION_DATA_TABLE, ZOELOCATIONDATA,  timer_to_status)
 from worlds.zoe.constants.data.region import ZOE_REGION_DATA_TABLE
 from worlds.zoe.constants.functions import ZOEFUNCTION 
 from worlds.zoe.constants.item_tags import ZOEITEMTAG
@@ -368,7 +368,7 @@ class ZoeInterface(GameInterface):
                       other_player: str | None,
                       location: int):
         """Handle receiving items from the multiworld"""
-        name = NAME_DICT.get(ITEM_FROM_AP_CODE[item_code], ITEM_FROM_AP_CODE[item_code])
+        name = NAME_DICT.get(ITEM_FROM_AP_CODE[item_code])
         if other_player is not None:
             classification = ZOE_ITEM_DATA_TABLE[name].AP_CLASSIFICATION
             if other_player == our_name:
@@ -409,8 +409,11 @@ class ZoeInterface(GameInterface):
 #                    if self.UnlockItem[weapon_name].status:
 #                        self._write32(weapon_data[weapon_name].AMMO_ADDRESS, ammo_pack)
             case ZOEITEM.ROTATION_TRAP:
-                pass
-
+                if self.timers.get(name, False):
+                    self.timers[name] += randint(6, 15)
+                else:
+                    self.timers[name] = int(time.time() + uniform(6, 15))
+                    
         if name in weapon_data.keys():
             if weapon_data[name].AMMO:
                 self._write32(weapon_data[name].AMMO_ADDRESS, weapon_data[name].AMMO)
@@ -420,7 +423,7 @@ class ZoeInterface(GameInterface):
     def update_equip(self, name: str):
         """Equip the most recently collected weapon/gadget, update recent uses"""
 
-        self._write8(ZOESTATUS.EQUIPPED_WEAPON, equipable_data[name].ID)
+        self._write8(ZOESTATUS.EQUIPPED_WEAPON, weapon_data[name].EQUIP)
 
     ###################
     # Check Locations #
@@ -519,7 +522,7 @@ class ZoeInterface(GameInterface):
     @staticmethod
     def get_victory_code():
         """Returns the apcode value of the goal location"""
-        return ZOE_LOCATION_DATA_TABLE[ZOELOCATION.HUB_ATLANTIS].AP_CODE
+        return ZOE_LOCATION_DATA_TABLE[ZOELOCATION.TOWN_1_TEMPEST].AP_CODE
 
     ##################
     # End of Main Loop #
@@ -528,12 +531,103 @@ class ZoeInterface(GameInterface):
     def late_update(self):
         """Ran at the end of the main loop to update any memory values based on collection state"""
         #self.area_cycler()
-        #self.weapon_cycler()
-        #self.timer_cycler()
         self.overflow_fix()
+        self.module_cycler()
+        self.weapon_cycler()
+        self.info_cycler()
+        self.passcode_cycler()
+        self.local_server_cycler()
+        self.timer_cycler()
+
+    def module_cycler(self):
+        """Cycles through each module and updates their state"""
+        if self.options.modules.value:
+            for name in module_data.keys():
+                bit = module_data[name].BITSET
+                if self.UnlockItem[name].status:
+                    if self.UnlockItem[name.unlock_delay]:
+                        self._write_bits(ZOESTATUS.OBTAINED_MODULES, {bit})
+                        self.UnlockItem[name].unlock_delay = 0
+                    else:
+                        self.UnlockItem[name].unlock_delay += 1
+                else:
+                    self._unwrite_bits(ZOESTATUS.OBTAINED_MODULES, {bit})
+
+    def weapon_cycler(self):
+        """Cycles through each weapon and updates their state"""
+        if self.options.weapons.value:
+            for name in weapon_data.keys():
+                bit = weapon_data[name].BITSET
+                ammo_addr = weapon_data[name].AMMO_ADDRESS
+                if self.UnlockItem[name].status:
+                    if self.UnlockItem[name.unlock_delay]:
+                        self._write_bits(ZOESTATUS.OBTAINED_WEAPONS, {bit})
+                        self.UnlockItem[name].unlock_delay = 0
+                    else:
+                        self.UnlockItem[name].unlock_delay += 1
+                else:
+                    self._unwrite_bits(ZOESTATUS.OBTAINED_WEAPONS, {bit})
+
+    def info_cycler(self):
+        """Cycles through each info and updates their state"""
+        if self.options.info.value:
+            for name in info_data.keys():
+                bit = info_data[name].BITSET
+                if self.UnlockItem[name].status:
+                    if self.UnlockItem[name.unlock_delay]:
+                        self._write_bits(ZOESTATUS.OBTAINED_INFO, {bit})
+                        self.UnlockItem[name].unlock_delay = 0
+                    else:
+                        self.UnlockItem[name].unlock_delay += 1
+                else:
+                    self._unwrite_bits(ZOESTATUS.OBTAINED_INFO, {bit})
+
+    def passcode_cycler(self):
+        """Cycles through each passcode item and updates their state"""
+        if self.options.passcodes_item.value:
+            for name in passcode_data.keys():
+                bit = passcode_data[name].BITSET
+                if self.UnlockItem[name].status:
+                    if self.UnlockItem[name.unlock_delay]:
+                        self._write_bits(ZOESTATUS.OBTAINED_PASSCODES, {bit})
+                        self.UnlockItem[name].unlock_delay = 0
+                    else:
+                        self.UnlockItem[name].unlock_delay += 1
+                else:
+                    self._unwrite_bits(ZOESTATUS.OBTAINED_PASSCODES, {bit})
 
     def overflow_fix(self):
         """Detect any integer overflows and reset the value"""
-        if self.jehuty_exp > 0x7FFFFFFF:
-            self._write32(ZOESTATUS.PLAYER_EXPERIENCE, 0)
+        if self.jehuty_exp > 0x7FFF:
+            self._write16(ZOESTATUS.PLAYER_EXPERIENCE, 0)
         # If other stuff needs overflow fixing, add here
+
+    def timer_cycler(self):
+        """Cycle through the timer dictionary, check their duration, and handle their effects"""
+        timers = list(self.timers.items())
+        for name, _time in timers:
+            if name.endswith(str(_time)):
+                _name = name[:-len(str(_time))]
+            else:
+                _name = name
+            if time.time() < _time:
+                if _name == name:
+                    status = timer_to_status[name]
+                    match status:
+                        case ZOESTATUS.ROTATION:
+                            self._write16(status, 0)
+                            self._write8(status + 4, 0)
+                            self._write8(ZOESTATUS.ROTATION, 3)
+
+            else:
+                self.timers.pop(name)
+                match _name:
+                    case ZOEITEM.ROTATION_TRAP:
+                        self._write8(ZOESTATUS.ROTATION, 0)
+
+    def respawn_local_servers(self):
+        """Respawn local servers if the associated location isn't checked but the local server's associated program is unlocked through AP"""
+        if (self.UnlockItem[ZOEITEM.MONITOR_FCMD].status
+            and ZOELOCATION.FACTORY_1_SCOUTING_MODULE_LOCAL_SERVER not in self.checked_locations
+            and self.area == ZOEREGION.FACTORY_1):
+            self._unwrite_bits(ZOESTATUS.OBTAINED_MODULES, ZOEITEM.MONITOR_FCMD.BITSET)
