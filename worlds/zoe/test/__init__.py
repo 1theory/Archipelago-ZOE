@@ -2,7 +2,7 @@
 
 from test.bases import WorldTestBase
 from worlds.zoe.constants.options import ZOEOPTION
-from worlds.zoe.world import ZoeWorld
+from ..world import ZoeWorld
 
 
 class ZOETestBase(WorldTestBase):

@@ -102,3 +102,10 @@ def process_start_inventory(world: "ZoeWorld"):
     world.options.start_inventory.value.pop(ZOEITEM.HANGAR_1, None)
 
 
+#def starting_areas(world: "ZoeWorld") -> list[str]:
+#    """Returns the areas randomly selected for the player to start with"""
+#    area_list: list[str] = [area for area in area_data.keys() if
+#                              area not in world.options.start_inventory_from_pool.value]
+#    if len(area_list) > 1:  
+#        world.random.shuffle(area_list)
+#    return area_list

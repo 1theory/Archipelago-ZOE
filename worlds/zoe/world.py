@@ -62,16 +62,15 @@ class ZoeWorld(World):
                                 "These builds are meant for testing and bug reporting purposes "
                                 "and should not be used for normal play!\n")
         # implement .yaml-less Universal Tracker support
-#        setup_options_from_slot_data(self)
+        #setup_options_from_slot_data(self)
         create_regions(self)
 
     def generate_starting_items(self):
         """Process player options to generate a list of early placed items, ensuring successful seed generation"""
-        self.preplaced_items = [ZOEITEM.JEHUTY_EXP, ZOEITEM.HANGAR_1, ZOEITEM.FACTORY_1]
+        self.preplaced_items = [ZOEITEM.HANGAR_1, ZOEITEM.FACTORY_1, ZOEITEM.TOWN_1, ZOEITEM.GLOBAL_HUB]
         for item in self.preplaced_items:
             self.push_precollected(self.create_item(item))
         process_start_inventory(self)
-        return
 
     def create_items(self):
         itempool = create_itempool(self)

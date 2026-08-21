@@ -41,7 +41,7 @@ def set_rules(world: "ZoeWorld"):
 
         # Intro Factory.1
         f"{ZOEREGION.FACTORY_1} -> {ZOEREGION.GLOBAL_HUB}":
-            lambda state: state.has_all([ZOEITEM.GLOBAL_HUB, ZOEITEM.GLOBAL_FCMD], world.player),
+            lambda state: state.has_all(ZOEITEM.GLOBAL_FCMD, world.player),
 
         f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.TOWN_1_TEMPEST}":
             lambda state: state.has(ZOEITEM.TOWN_1, world.player),
