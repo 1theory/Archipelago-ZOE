@@ -8,10 +8,7 @@ class Configuration(OptionCounter):
     """
     Determines how do you want the game to be configured like by default.
     ------------------------------------------------------------
-    Default: Vibration ON / Caption Demo ON Game ON / Sound STEREO
-    No
-
-
+    Default: Vibration ON (1)/ Caption Demo ON (1) Game ON (1)/ Sound STEREO (1) MONO (0)
     ------------------------------------------------------------
     0 = Disabled, Any other value = Enabled
     """

@@ -17,4 +17,4 @@ class PasscodeItems(Choice):
     display_name = ZOEOPTION.PASSCODES_ITEMS
     option_disabled = 0
     option_enabled = 1
-    default = 1
+    default = 0

@@ -38,11 +38,11 @@ def create_itempool(world: "ZoeWorld") -> list[Item]:
         if ZOEITEMTAG.UNUSED in item_tags:
             continue
         # Already placed items (Starting items and vanilla)
-        if name in world.preplaced_items:
-            count = world.preplaced_items.count(name)
-            if item_amount <= count:
-                continue
-            item_amount -= count  # remove one from the pool as it has already been placed
+#        if name in world.preplaced_items:
+#            count = world.preplaced_items.count(name)
+#            if item_amount <= count:
+#                continue
+#            item_amount -= count  # remove one from the pool as it has already been placed
 
         if ZOEITEMTAG.INFO in item_tags and not options.infos.value:
             continue
@@ -102,10 +102,10 @@ def process_start_inventory(world: "ZoeWorld"):
     world.options.start_inventory.value.pop(ZOEITEM.HANGAR_1, None)
 
 
-#def starting_areas(world: "ZoeWorld") -> list[str]:
-#    """Returns the areas randomly selected for the player to start with"""
-#    area_list: list[str] = [area for area in area_data.keys() if
-#                              area not in world.options.start_inventory_from_pool.value]
-#    if len(area_list) > 1:  
-#        world.random.shuffle(area_list)
-#    return area_list
+def starting_areas(world: "ZoeWorld") -> list[str]:
+    """Returns the areas randomly selected for the player to start with"""
+    area_list: list[str] = [area for area in area_data.keys() if
+                              area not in world.options.start_inventory_from_pool.value]
+    if len(area_list) > 1:  
+        world.random.shuffle(area_list)
+    return area_list

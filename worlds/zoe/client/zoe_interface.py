@@ -385,7 +385,9 @@ class ZoeInterface(GameInterface):
         
         logger.info(f"Item received: {ITEM_FROM_AP_CODE[item_code]}, AP code: {item_code}")
         logger.debug(f"Item received: {ITEM_FROM_AP_CODE[item_code]}, AP code: {item_code}")
-            
+
+        self.UnlockItem[name].status += 1
+
         match name:                    
                 case ZOEITEM.JEHUTY_EXP:
                     exp = self._read16(ZOESTATUS.PLAYER_EXPERIENCE)
@@ -675,12 +677,12 @@ class ZoeInterface(GameInterface):
         if self.options.local_server:
             if (self.UnlockItem[ZOEITEM.MONITOR_FCMD].status
                 and ZOELOCATION.FACTORY_1_SCOUTING_MODULE_LOCAL_SERVER not in self.checked_locations
-                and self.area == ZOEREGION.FACTORY_1):
+                and self.area == ZOEREGION.FACTORY_1 or ZOEREGION.HANGAR_1 and ZOESTATUS.STORY_PROGRESS <= 0x02):
                 self._write32(ZOEFUNCTION.READ_MODULES_NTSC, 0x8C820C24)
 
             if (self.UnlockItem[ZOEITEM.GLOBAL_FCMD].status
                 and ZOELOCATION.FACTORY_1_FLIGHT_MODULE_LOCAL_SERVER not in self.checked_locations
-                and self.area == ZOEREGION.FACTORY_1):
+                and self.area == ZOEREGION.FACTORY_1 or ZOEREGION.HANGAR_1 and ZOESTATUS.STORY_PROGRESS <= 0x02):
                 self._write32(ZOEFUNCTION.READ_MODULES_NTSC, 0x8C820C24)
                 self._write32(ZOEFUNCTION.READ_BLOCKED_MODULES_NTSC, 0x8C620C24)
 
