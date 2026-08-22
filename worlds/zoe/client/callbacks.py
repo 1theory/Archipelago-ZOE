@@ -274,7 +274,7 @@ async def handle_deathlink(ctx: "Context") -> None:
     """Receive and send deathlink"""
     if not ctx.death_link:
         return
-    ctx.game_interface.reload_check()
+    #ctx.game_interface.reload_check()
     if time() - ctx.last_death_link > 10:
         alive, message = ctx.game_interface.alive()
         if alive:

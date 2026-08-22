@@ -12,4 +12,7 @@ class ZOETAG:
     LOCAL_SERVERS = "Local Servers"
     PASSCODES = "Passcodes"
     VR = "VR"
+    VISIT = "Visits"
+    SQUADS_ENGAGED = "Squads Engaged"
     NOT_IMPLEMENTED = "Not Implemented"
+    LEVEL = "Level"

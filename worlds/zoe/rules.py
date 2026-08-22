@@ -36,15 +36,15 @@ def set_rules(world: "ZoeWorld"):
     region_rules_dict: dict[str, Callable] = {
 
         # Intro Hangar.1
-        #f"{ZOEREGION.HANGAR_1} -> {ZOEREGION.FACTORY_1}":
-        #    lambda state: state.has(ZOEITEM.FACTORY_1, world.player),
+       # f"{ZOEREGION.HANGAR_1} -> {ZOEREGION.FACTORY_1}":
+       #     lambda state: state.has(ZOEITEM.FACTORY_1, world.player),
 
         # Intro Factory.1
-        #f"{ZOEREGION.FACTORY_1} -> {ZOEREGION.GLOBAL_HUB}":
-        #    lambda state: state.has(ZOEITEM.GLOBAL_HUB, world.player),
+        f"{ZOEREGION.FACTORY_1} -> {ZOEREGION.GLOBAL_HUB}":
+            lambda state: state.has_all([ZOEITEM.GLOBAL_HUB, ZOEITEM.GLOBAL_FCMD], world.player),
 
-        #f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.TOWN_1_TEMPEST}":
-        #    lambda state: state.has(ZOEITEM.TOWN_1, world.player),
+        f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.TOWN_1_TEMPEST}":
+            lambda state: state.has(ZOEITEM.TOWN_1, world.player),
 
         f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.TOWN_1}":
             lambda state: state.has(ZOEITEM.TOWN_1, world.player),
@@ -53,10 +53,10 @@ def set_rules(world: "ZoeWorld"):
 
     rules_dict: dict[str, Callable] = {
 
-        #ZOELOCATION.FACTORY_1_FLY_AWAY:
-        #    lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD], world.player),
-        #ZOELOCATION.TOWN_1_TEMPEST:
-        #    lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD], world.player)
+        ZOELOCATION.FACTORY_1_FLY_AWAY:
+            lambda state: state.has(ZOEITEM.GLOBAL_FCMD, world.player),
+        ZOELOCATION.TOWN_1_TEMPEST:
+            lambda state: state.has(ZOEITEM.GLOBAL_FCMD, world.player)
     }
 
     for region in world.multiworld.get_regions(world.player):

@@ -54,11 +54,11 @@ def create_itempool(world: "ZoeWorld") -> list[Item]:
             continue
         # Catch accidental duplicates
         #if item_amount is None:
-            zoe_logger.warning(f"{name} has an incorrect amount count")
+        #    zoe_logger.warning(f"{name} has an incorrect amount count")
         #else:
-            if item_amount > 1:
-                zoe_logger.warning(f"multiple copies of {name} added to the item pool")
-            itempool += create_multiple_items(world, name, item_amount, item_type)
+        #    if item_amount > 1:
+        #        zoe_logger.warning(f"multiple copies of {name} added to the item pool")
+        itempool += create_multiple_items(world, name, item_type)
 
     victory = create_item(world, ZOEITEM.VICTORY)
     world.multiworld.get_location(ZOELOCATION.TOWN_1_TEMPEST, world.player).place_locked_item(victory)

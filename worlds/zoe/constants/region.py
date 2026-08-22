@@ -25,6 +25,8 @@ class ZOEREGION:
     VR_TRAINING = "VR.TRAINING"
     ATLANTIS_1 = "Ending"
     ENEMYCOUNT = "Enemy Count"
+    SQUAD = "Squads Engaged"
+
 
 AREA_NAME_FROM_ID: dict[int, str] = {
     0x00: ZOEREGION.MENU,    
@@ -58,4 +60,6 @@ REGIONS_WITH_LOCATIONS: list[str] = [
     ZOEREGION.TOWN_1_TEMPEST,
     ZOEREGION.TOWN_1,
     ZOEREGION.ENEMYCOUNT,
+    ZOEREGION.VR_TRAINING,
+    ZOEREGION.SQUAD,
 ]

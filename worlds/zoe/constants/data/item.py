@@ -121,7 +121,7 @@ class ZOEITEMDATA:
         all_tags: list[str] = [ZOEITEMTAG.INFO]
         if tags is not None:
             all_tags.extend(tags)
-        return ZOEITEMDATA(idx, address, bitset, ap_classification=ap_classification, tags=all_tags)
+        return ZOEITEMDATA(idx, address, bitset, ap_classification=ItemClassification.progression, tags=all_tags)
 
 
     @staticmethod
@@ -132,13 +132,13 @@ class ZOEITEMDATA:
 
     @staticmethod
     def construct_area(idx: int,
-                        address: int = 0, 
+                        ap_classification: ItemClassification,
                         tags: list[str] | None = None):
         """Construct the area item"""
         all_tags: list[str] = [ZOEITEMTAG.AREA]
         if tags is not None:
             all_tags.extend(tags)
-        return ZOEITEMDATA(idx, address, tags=[ZOEITEMTAG.AREA])
+        return ZOEITEMDATA(idx, ap_classification=ap_classification, tags=[ZOEITEMTAG.AREA])
 
     @staticmethod
     def construct_other(idx: int,
@@ -159,8 +159,8 @@ ZOE_ITEM_DATA_TABLE: dict[str, ZOEITEMDATA] = {
     ZOEITEM.BOUNDER: ZOEITEMDATA.construct_weapon(0x02, 2, 0x03, 15, ZOESTATUS.BOUNDER_AMMO_ADDRESS, ItemClassification.useful),
     ZOEITEM.PHALANX: ZOEITEMDATA.construct_weapon(0x03, 3, 0x04, 150, ZOESTATUS.PHALANX_AMMO_ADDRESS, ItemClassification.useful),
     ZOEITEM.HALBERD: ZOEITEMDATA.construct_weapon(0x04, 4, 0x05, 15, ZOESTATUS.HALBERD_AMMO_ADDRESS, ItemClassification.useful),
-    ZOEITEM.COMET: ZOEITEMDATA.construct_weapon(0x05, 5, 0x06, 15, ZOESTATUS.COMET_AMMO_ADDRESS, ItemClassification.progression),
-    ZOEITEM.GAUNTLET: ZOEITEMDATA.construct_weapon(0x06, 6, 0x07, 15, ZOESTATUS.GAUNTLET_AMMO_ADDRESS,  ItemClassification.progression),
+    ZOEITEM.COMET: ZOEITEMDATA.construct_weapon(0x05, 5, 0x06, 15, ZOESTATUS.COMET_AMMO_ADDRESS, ItemClassification.useful),
+    ZOEITEM.GAUNTLET: ZOEITEMDATA.construct_weapon(0x06, 6, 0x07, 15, ZOESTATUS.GAUNTLET_AMMO_ADDRESS,  ItemClassification.useful),
     ZOEITEM.SNIPER: ZOEITEMDATA.construct_weapon(0x07, 7, 0x08, 15, ZOESTATUS.SNIPER_AMMO_ADDRESS, ItemClassification.progression),
     ZOEITEM.DECOY: ZOEITEMDATA.construct_weapon_2(0x08, 0, 0x09, 15, ZOESTATUS.DECOY_AMMO_ADDRESS, ItemClassification.progression),
     ZOEITEM.MUMMY: ZOEITEMDATA.construct_weapon_2(0x09, 1, 0x0A, 15, ZOESTATUS.MUMMY_AMMO_ADDRESS, ItemClassification.useful),
@@ -199,10 +199,10 @@ ZOE_ITEM_DATA_TABLE: dict[str, ZOEITEMDATA] = {
     ZOEITEM.INFO_G_INF: ZOEITEMDATA.construct_unused(0x2C),
     ZOEITEM.INFO_H_INF: ZOEITEMDATA.construct_unused(0x2D),
     # Areas
-    ZOEITEM.HANGAR_1: ZOEITEMDATA.construct_area(0x40),
-    ZOEITEM.FACTORY_1: ZOEITEMDATA.construct_area(0x41),
-    ZOEITEM.TOWN_1: ZOEITEMDATA.construct_area(0x42),
-    ZOEITEM.GLOBAL_HUB: ZOEITEMDATA.construct_area(0x43),
+    ZOEITEM.HANGAR_1: ZOEITEMDATA.construct_area(0x40,ItemClassification.progression),
+    ZOEITEM.FACTORY_1: ZOEITEMDATA.construct_area(0x41,ItemClassification.progression),
+    ZOEITEM.TOWN_1: ZOEITEMDATA.construct_area(0x42,ItemClassification.progression),
+    ZOEITEM.GLOBAL_HUB: ZOEITEMDATA.construct_area(0x43,ItemClassification.progression),
     # Filler
     ZOEITEM.JEHUTY_EXP: ZOEITEMDATA.construct_other(0x2E),
     ZOEITEM.LEVEL_UP: ZOEITEMDATA.construct_other(0x2F),

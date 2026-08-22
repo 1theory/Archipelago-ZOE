@@ -385,7 +385,7 @@ class ZoeInterface(GameInterface):
                       other_player: str | None,
                       location: int):
         """Handle receiving items from the multiworld"""
-        name = PROG_TO_NAME_DICT.get(ITEM_FROM_AP_CODE[item_code])
+        name = PROG_TO_NAME_DICT.get(ITEM_FROM_AP_CODE[item_code], ITEM_FROM_AP_CODE[item_code])
         
         logger.info(f"Item received: {ITEM_FROM_AP_CODE[item_code]}, AP code: {item_code}")
         logger.debug(f"Item received: {ITEM_FROM_AP_CODE[item_code]}, AP code: {item_code}")
@@ -393,7 +393,7 @@ class ZoeInterface(GameInterface):
         match name:                    
                 case ZOEITEM.JEHUTY_EXP:
                     exp = self._read16(ZOESTATUS.PLAYER_EXPERIENCE)
-                    exp_gain = min(5, max(20))
+                    exp_gain = randint(3, 10)
                     new_exp = exp + exp_gain
                     if new_exp > 0xFFFF:
                         new_exp = 0xFFFF
@@ -405,10 +405,12 @@ class ZoeInterface(GameInterface):
                     self._write8(ZOESTATUS.JEHUTY_EXP_PACKS, jehuty_exp_packs)
                 case ZOEITEM.LEVEL_UP:
                     player_level = self._read8(ZOESTATUS.PLAYER_LEVEL)
-                    lvl_gain = player_level + 1
+                    new_lvl = player_level + 1
+                    level_packs = 0
+                    self._read8(ZOESTATUS.LEVEL_PACKS) == level_packs
                     if level_packs < 0x0A:
                         level_packs += 1
-                    self._write8(player_level, lvl_gain)
+                    self._write8(ZOESTATUS.PLAYER_LEVEL, new_lvl)
                     self._write8(ZOESTATUS.LEVEL_PACKS, level_packs)
                 case ZOEITEM.EXTRA_AMMO:
                     pass
@@ -500,15 +502,15 @@ class ZoeInterface(GameInterface):
             self.last_death_count = self.death_count
             logger.debug("Death Detected! (death count increased)")
             death = (ZOESTATUS.GAME_OVER == 1)
-            return False, f"{self.player_type} {death}"
+            return False, f"{death}"
 
         # logger.debug(f"{self.player_type} is Alive")
-        return True, f"{self.player_type} is Alive"
+        return True, f"is Alive"
 
     def can_be_killed(self) -> bool:
         """Checks if the player can be killed based on the current game state."""
         current_time = time.time()
-        if self.self.main_menu is True or ZOESTATUS.STAND_BY_STATE != 0 or ZOESTATUS.PAUSE_STATE != 0:
+        if self.main_menu is True or ZOESTATUS.STAND_BY_STATE != 0 or ZOESTATUS.PAUSE_STATE != 0:
             self.deathlink_grace_period = current_time
         if current_time - self.deathlink_grace_period < 1:
             return False
@@ -549,12 +551,12 @@ class ZoeInterface(GameInterface):
 
     def module_cycler(self):
         """Cycles through each module and updates their state"""
-        if self.options.modules is True:
+        if self.options.modules:
             READ_MONITOR_MODULE = ZOEFUNCTION.READ_MONITOR_MODULE_NTSC
             READ_FLIGHT_MODULE = ZOEFUNCTION.READ_FLIGHT_MODULE_NTSC
             if self.UnlockItem[ZOEITEM.MONITOR_FCMD].status == 0:
                 self._write32(READ_MONITOR_MODULE, 0x8C820B24)
-            else:
+            if self.UnlockItem[ZOEITEM.MONITOR_FCMD].status == 1:
                 self._write32(READ_MONITOR_MODULE, 0x8C820024)
             if self.UnlockItem[ZOEITEM.GLOBAL_FCMD].status == 0:
                 self._write32(READ_FLIGHT_MODULE, 0x8C820B24)
@@ -574,7 +576,7 @@ class ZoeInterface(GameInterface):
 
     def weapon_cycler(self):
         """Interval update function: Check unlock/lock status of weapons"""
-        if self.options.weapons is True:
+        if self.options.weapons:
             for name in weapon_data.keys():
                 bit_set = weapon_data[name].BITSET
                 ammo_addr = weapon_data[name].AMMO_ADDRESS
@@ -602,7 +604,7 @@ class ZoeInterface(GameInterface):
 
     def info_cycler(self):
         """Cycles through each info and updates their state"""
-        if self.options.infos is True:
+        if self.options.infos:
             for name in info_data.keys():
                 bit = info_data[name].BITSET
                 if self.UnlockItem[name].status:
@@ -616,7 +618,7 @@ class ZoeInterface(GameInterface):
 
     def passcode_cycler(self):
         """Cycles through each passcode item and location and updates their state"""
-        if self.options.passcodes_items is True:
+        if self.options.passcodes_items:
             WRITE_PASSCODES = ZOEFUNCTION.WRITE_PASSCODES_NTSC
             self._write32(WRITE_PASSCODES, 0xACA20B1C)
             for name in passcode_data.keys():
@@ -676,7 +678,7 @@ class ZoeInterface(GameInterface):
 
     def respawn_local_servers(self):
         """Respawn local servers if the associated location isn't checked but the local server's associated program is unlocked through AP"""
-        if self.options.local_server is True:
+        if self.options.local_server:
             if (self.UnlockItem[ZOEITEM.MONITOR_FCMD].status
                 and ZOELOCATION.FACTORY_1_SCOUTING_MODULE_LOCAL_SERVER not in self.checked_locations
                 and self.area == ZOEREGION.FACTORY_1):

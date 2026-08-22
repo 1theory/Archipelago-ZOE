@@ -24,7 +24,7 @@ def create_regions(world: "ZoeWorld"):
     menu = create_region(world, ZOEREGION.MENU)
     hangar_1 = create_region_and_connect(world, ZOEREGION.HANGAR_1, f"{ZOEREGION.MENU} -> {ZOEREGION.HANGAR_1}", menu)
     factory_1 = create_region_and_connect(world, ZOEREGION.FACTORY_1, 
-                f"{ZOEREGION.HANGAR_1} -> {ZOEREGION.FACTORY_1}", hangar_1)
+                                        f"{ZOEREGION.HANGAR_1} -> {ZOEREGION.FACTORY_1}", hangar_1)
     global_hub = create_region_and_connect(world, ZOEREGION.GLOBAL_HUB,
                                            f"{ZOEREGION.FACTORY_1} -> {ZOEREGION.GLOBAL_HUB}", factory_1)
 
@@ -40,6 +40,8 @@ def create_regions(world: "ZoeWorld"):
 
     # ----- Regions for other stuff -----#
     create_region_and_connect(world, ZOEREGION.ENEMYCOUNT, f"{ZOEREGION.MENU} -> {ZOEREGION.ENEMYCOUNT}", menu)
+    create_region_and_connect(world, ZOEREGION.SQUAD, f"{ZOEREGION.MENU} -> {ZOEREGION.SQUAD}", menu)
+    create_region_and_connect(world, ZOEREGION.VR_TRAINING, f"{ZOEREGION.MENU} -> {ZOEREGION.VR_TRAINING}", menu)
 
     missing_regions = []
     regions_missing = []

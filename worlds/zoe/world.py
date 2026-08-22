@@ -24,7 +24,7 @@ zoe_logger.setLevel(DEBUG)
 class ZoeWorld(World):
     f"""
     {ZOEOPTION.GAME_TITLE_FULL} is a hack-and-slash mecha game.
-    Save your colony from total destruction.
+    You are the only one who can save the colony.
     """
 
     game = ZOEOPTION.GAME_TITLE_FULL
