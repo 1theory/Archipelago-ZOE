@@ -71,16 +71,12 @@ class ZoeInterface(GameInterface):
     options = Options
     timers: dict[str, float] = {}
     area: str = ZOEREGION.GLOBAL_HUB
-    new_planet: bool = True
-    vehicle: int = 0
-    health: int = 100
+    new_area: bool = True
     max_health: int = 10
     main_menu: bool = False
     death_count: int = 0
     last_death_count: int = 0
-    last_death_state: int = 0
     has_died: bool = False
-    deathlink_grace_period: float = 0.0
     player_level: int = 0
     jehuty_exp: int = 0
     checked_locations: set[str] = set()
@@ -509,10 +505,7 @@ class ZoeInterface(GameInterface):
 
     def can_be_killed(self) -> bool:
         """Checks if the player can be killed based on the current game state."""
-        current_time = time.time()
-        if self.main_menu is True or ZOESTATUS.STAND_BY_STATE != 0 or ZOESTATUS.PAUSE_STATE != 0:
-            self.deathlink_grace_period = current_time
-        if current_time - self.deathlink_grace_period < 1:
+        if self.main_menu is True or ZOESTATUS.STAND_BY_STATE == 0x01 or ZOESTATUS.PAUSE_STATE == 0x01:
             return False
         return True    
 
@@ -554,19 +547,20 @@ class ZoeInterface(GameInterface):
         if self.options.modules:
             READ_MONITOR_MODULE = ZOEFUNCTION.READ_MONITOR_MODULE_NTSC
             READ_FLIGHT_MODULE = ZOEFUNCTION.READ_FLIGHT_MODULE_NTSC
+            logger.info(f"Scouting module received: {self.UnlockItem[ZOEITEM.MONITOR_FCMD].status}")
             if self.UnlockItem[ZOEITEM.MONITOR_FCMD].status == 0:
                 self._write32(READ_MONITOR_MODULE, 0x8C820B24)
-            if self.UnlockItem[ZOEITEM.MONITOR_FCMD].status == 1:
+            else:
                 self._write32(READ_MONITOR_MODULE, 0x8C820024)
             if self.UnlockItem[ZOEITEM.GLOBAL_FCMD].status == 0:
                 self._write32(READ_FLIGHT_MODULE, 0x8C820B24)
-            else:
+            else:    
                 self._write32(READ_FLIGHT_MODULE, 0x8C820024)
 
             for name in module_data.keys():
                 bit = module_data[name].BITSET
                 if self.UnlockItem[name].status:
-                    if self.UnlockItem[name.unlock_delay]:
+                    if self.UnlockItem[name].unlock_delay:
                         self._write_bits(ZOESTATUS.OBTAINED_MODULES, {bit})
                         self.UnlockItem[name].unlock_delay = 0
                     else:
