@@ -23,11 +23,10 @@ def create_regions(world: "ZoeWorld"):
     # ----- Introduction Sequence -----#
     menu = create_region(world, ZOEREGION.MENU)
     hangar_1 = create_region_and_connect(world, ZOEREGION.HANGAR_1, f"{ZOEREGION.MENU} -> {ZOEREGION.HANGAR_1}", menu)
-    factory_1 = create_region_and_connect(world, ZOEREGION.FACTORY_1, 
-                                        f"{ZOEREGION.HANGAR_1} -> {ZOEREGION.FACTORY_1}", hangar_1)
     global_hub = create_region_and_connect(world, ZOEREGION.GLOBAL_HUB,
-                                           f"{ZOEREGION.FACTORY_1} -> {ZOEREGION.GLOBAL_HUB}", factory_1)
-
+                                           f"{ZOEREGION.MENU} -> {ZOEREGION.MENU}", menu)
+    create_region_and_connect(world, ZOEREGION.FACTORY_1,
+                              f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.FACTORY_1}", global_hub)
     # ----- Regions within the game -----#   
     create_region_and_connect(world, ZOEREGION.TOWN_1_TEMPEST,
                               f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.TOWN_1_TEMPEST}", global_hub)

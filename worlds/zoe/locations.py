@@ -38,6 +38,8 @@ all_tags: list[str] = [
     ZOETAG.UNSTABLE,
     ZOETAG.WEAPONS,
     ZOETAG.LEVEL,
+    ZOETAG.RESCUE,
+    ZOETAG.AMMO,
 ]
 
 location_groups: dict[str, set[str]] = {
@@ -45,6 +47,8 @@ location_groups: dict[str, set[str]] = {
     ZOEREGION.FACTORY_1: get_from_tag(ZOEREGION.FACTORY_1),
     ZOEREGION.TOWN_1_TEMPEST: get_from_tag(ZOEREGION.TOWN_1_TEMPEST),
     ZOEREGION.TOWN_1: get_from_tag(ZOEREGION.TOWN_1),
+    ZOEREGION.TOWN_2: get_from_tag(ZOEREGION.TOWN_2),
+    ZOEREGION.CITY_1: get_from_tag(ZOEREGION.CITY_1),
     ZOETAG.ENEMY: get_from_tag(ZOETAG.ENEMY),
     ZOETAG.ENEMYCOUNT: get_from_tag(ZOETAG.ENEMYCOUNT),
     ZOETAG.SQUADS_ENGAGED: get_from_tag(ZOETAG.SQUADS_ENGAGED),
@@ -56,7 +60,9 @@ location_groups: dict[str, set[str]] = {
     ZOETAG.VISIT: get_from_tag(ZOETAG.VISIT),
     ZOETAG.UNSTABLE: get_from_tag(ZOETAG.UNSTABLE),
     ZOETAG.WEAPONS: get_from_tag(ZOETAG.WEAPONS),
-    ZOETAG.LEVEL: get_from_tag(ZOETAG.LEVEL)
+    ZOETAG.LEVEL: get_from_tag(ZOETAG.LEVEL),
+    ZOETAG.AMMO: get_from_tag(ZOETAG.AMMO),
+    ZOETAG.RESCUE: get_from_tag(ZOETAG.RESCUE),
     }
 
 def get_level_locations(region: str) -> set[str]:

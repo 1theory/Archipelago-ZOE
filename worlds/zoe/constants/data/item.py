@@ -203,6 +203,8 @@ ZOE_ITEM_DATA_TABLE: dict[str, ZOEITEMDATA] = {
     ZOEITEM.FACTORY_1: ZOEITEMDATA.construct_area(0x41,ItemClassification.progression),
     ZOEITEM.TOWN_1: ZOEITEMDATA.construct_area(0x42,ItemClassification.progression),
     ZOEITEM.GLOBAL_HUB: ZOEITEMDATA.construct_area(0x43,ItemClassification.progression),
+    ZOEITEM.CITY_1: ZOEITEMDATA.construct_area(0x44,ItemClassification.progression),
+    ZOEITEM.TOWN_2: ZOEITEMDATA.construct_area(0x45,ItemClassification.progression),
     # Filler
     ZOEITEM.JEHUTY_EXP: ZOEITEMDATA.construct_other(0x2E),
     ZOEITEM.LEVEL_UP: ZOEITEMDATA.construct_other(0x2F),
