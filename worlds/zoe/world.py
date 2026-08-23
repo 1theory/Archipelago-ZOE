@@ -84,7 +84,7 @@ class ZoeWorld(World):
 
     def generate_starting_items(self):
         """Process player options to generate a list of early placed items, ensuring successful seed generation"""
-        self.preplaced_items = [ZOEITEM.HANGAR_1, ZOEITEM.FACTORY_1, ZOEITEM.TOWN_1, ZOEITEM.GLOBAL_HUB]
+        self.preplaced_items = [ZOEITEM.HANGAR_1, ZOEITEM.FACTORY_1, ZOEITEM.GLOBAL_HUB]
         for item in self.preplaced_items:
             self.push_precollected(self.create_item(item))
         process_start_inventory(self)

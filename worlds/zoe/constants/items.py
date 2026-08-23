@@ -74,4 +74,4 @@ class ZOEITEM:
 
     ROTATION_TRAP = "Rotation Trap"
 
-    VICTORY = "The Purpose of Living"
+    VICTORY = "Purpose of Living"

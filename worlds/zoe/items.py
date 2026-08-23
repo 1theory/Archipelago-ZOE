@@ -53,11 +53,11 @@ def create_itempool(world: "ZoeWorld") -> list[Item]:
         if ZOEITEMTAG.PASSCODE in item_tags and not options.passcodes_items.value:
             continue
         # Catch accidental duplicates
-        #if item_amount is None:
-        #    zoe_logger.warning(f"{name} has an incorrect amount count")
-        #else:
-        #    if item_amount > 1:
-        #        zoe_logger.warning(f"multiple copies of {name} added to the item pool")
+#        if item_amount is None:
+#            zoe_logger.warning(f"{name} has an incorrect amount count")
+#        else:
+#            if item_amount > 1:
+#                zoe_logger.warning(f"multiple copies of {name} added to the item pool")
         itempool += create_multiple_items(world, name, item_type)
 
     victory = create_item(world, ZOEITEM.VICTORY)

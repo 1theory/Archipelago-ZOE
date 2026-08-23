@@ -30,3 +30,9 @@ class TestTempest(ZOETestBase):
         self.assertFalse(self.can_reach_location(ZOELOCATION.CITY_1_DESTROY_RELAY_BLOCK),
                          "Goal location reachable with no items")
         self.assertBeatable(False)
+
+        self.collect_by_name([ZOEITEM.MONITOR_FCMD, ZOEITEM.GLOBAL_FCMD, ZOEITEM.SNIPER])
+        self.assertTrue(self.can_reach_location(ZOELOCATION.CITY_1_DESTROY_RELAY_BLOCK),
+                        "Goal location not reachable with items")
+        self.assertBeatable(True)
+        

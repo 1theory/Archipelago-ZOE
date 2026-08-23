@@ -94,14 +94,14 @@ def set_rules(world: "ZoeWorld"):
             lambda state: state.has(ZOEITEM.SNIPER, world.player),
         ZOELOCATION.CITY_1_GEYSER:
             lambda state: state.has(ZOEITEM.SNIPER, world.player),
-        ZOELOCATION.CITY_1_DESTROY_RELAY_BLOCK:
-            lambda state: state.has(ZOEITEM.SNIPER, world.player),
         #ZOELOCATION.TOWN_2_JAVELIN_AMMO_2:
         #    lambda state: state.can_reach_region(ZOEREGION.CITY_1, world.player),
         ZOELOCATION.TOWN_2_PHALANX:
             lambda state: state.can_reach_region(ZOEREGION.CITY_1, world.player),
         ZOELOCATION.TOWN_2_SNIPER:
             lambda state: state.can_reach_region(ZOEREGION.CITY_1, world.player),    
+        ZOELOCATION.CITY_1_DESTROY_RELAY_BLOCK:
+            lambda state: state.has(ZOEITEM.SNIPER, world.player),
     }
 
     for region in world.multiworld.get_regions(world.player):
