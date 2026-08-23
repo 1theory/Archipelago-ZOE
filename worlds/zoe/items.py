@@ -29,6 +29,7 @@ def create_itempool(world: "ZoeWorld") -> list[Item]:
     """Returns a list of items to be added to the item pool after checking options"""
     itempool: list[Item] = []
     options: type[ZoeOptions] = world.options
+    item_amount: int = 1
 
     for name, entry in item_table.items():
         item_type: ItemClassification = entry.AP_CLASSIFICATION
@@ -38,11 +39,11 @@ def create_itempool(world: "ZoeWorld") -> list[Item]:
         if ZOEITEMTAG.UNUSED in item_tags:
             continue
         # Already placed items (Starting items and vanilla)
-#        if name in world.preplaced_items:
-#            count = world.preplaced_items.count(name)
-#            if item_amount <= count:
-#                continue
-#            item_amount -= count  # remove one from the pool as it has already been placed
+        if name in world.preplaced_items:
+            count = world.preplaced_items.count(name)
+            if item_amount <= count:
+                continue
+            item_amount -= count  # remove one from the pool as it has already been placed
 
         if ZOEITEMTAG.INFO in item_tags and not options.infos.value:
             continue
@@ -53,12 +54,12 @@ def create_itempool(world: "ZoeWorld") -> list[Item]:
         if ZOEITEMTAG.PASSCODE in item_tags and not options.passcodes_items.value:
             continue
         # Catch accidental duplicates
-#        if item_amount is None:
-#            zoe_logger.warning(f"{name} has an incorrect amount count")
-#        else:
-#            if item_amount > 1:
-#                zoe_logger.warning(f"multiple copies of {name} added to the item pool")
-        itempool += create_multiple_items(world, name, item_type)
+        if item_amount is None:
+            zoe_logger.warning(f"{name} has an incorrect amount count")
+        else:
+            if item_amount > 1:
+                zoe_logger.warning(f"multiple copies of {name} added to the item pool")
+        itempool += create_multiple_items(world, name, item_amount, item_type)
 
     victory = create_item(world, ZOEITEM.VICTORY)
     world.multiworld.get_location(ZOELOCATION.CITY_1_DESTROY_RELAY_BLOCK, world.player).place_locked_item(victory)

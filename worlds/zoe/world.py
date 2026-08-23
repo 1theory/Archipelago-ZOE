@@ -7,6 +7,7 @@ from Options import OptionError
 from worlds.AutoWorld import World
 from worlds.zoe.constants.data.item import item_groups, ZOE_ITEM_DATA_TABLE
 from worlds.zoe.constants.items import ZOEITEM
+from worlds.zoe.constants.locations.visit_area import ZOEVISIT
 from worlds.zoe.constants.locations.general import ZOELOCATION
 from worlds.zoe.constants.options import ZOEOPTION
 from worlds.zoe.items import (create_item, create_itempool, get_filler_selection, process_start_inventory, starting_areas)
@@ -65,26 +66,24 @@ class ZoeWorld(World):
         #setup_options_from_slot_data(self)
         create_regions(self)
 
-        starting_area_list = self.generate_starting_items()
-        self.place_starting_items(starting_area_list)
+        self.generate_starting_items()
+        self.place_starting_items()
 
-    def place_starting_items(self, starting_area_list: list[str]):
-        """Take the list of starting planets and starting weapons and place them on locations or as precollected"""
+    def place_starting_items(self):
+        """Take the list of starting areas and place them on locations or as precollected"""
 
-        if len(starting_area_list) == 1:  # either [Phoenix] or [Other]
-                if starting_area_list[0] == ZOEITEM.GLOBAL_HUB:
-                    self.preplaced_items.append(starting_area_list[0])
-                    self.push_precollected(self.create_item(starting_area_list[0]))
-                else:
-                    self.get_location(ZOELOCATION.HANGAR_1_FIRST_RAPTOR).place_locked_item(
-                        self.create_item(starting_area_list[0]))
-                
-        self.preplaced_items.extend(starting_area_list)
-
+        self.get_location(ZOEVISIT.HANGAR_1_VISIT).place_locked_item(
+            self.create_item(ZOEITEM.HANGAR_1))     
+        self.get_location(ZOELOCATION.HANGAR_1_METATRON_ORE).place_locked_item(
+            self.create_item(ZOEITEM.FACTORY_1))                     
+        self.get_location(ZOELOCATION.FACTORY_1_NEITH).place_locked_item(
+            self.create_item(ZOEITEM.GLOBAL_HUB))
+        self.get_location(ZOELOCATION.FACTORY_1_FLY_AWAY).place_locked_item(
+            self.create_item(ZOEITEM.TOWN_1))     
 
     def generate_starting_items(self):
         """Process player options to generate a list of early placed items, ensuring successful seed generation"""
-        self.preplaced_items = [ZOEITEM.HANGAR_1, ZOEITEM.FACTORY_1, ZOEITEM.GLOBAL_HUB]
+        self.preplaced_items = [ZOEITEM.HANGAR_1,ZOEITEM.FACTORY_1,ZOEITEM.GLOBAL_HUB,ZOEITEM.TOWN_1]
         for item in self.preplaced_items:
             self.push_precollected(self.create_item(item))
         process_start_inventory(self)

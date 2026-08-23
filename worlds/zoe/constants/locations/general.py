@@ -3,7 +3,8 @@
 
 class ZOELOCATION:
     """String constants for locations"""
-    HANGAR_1_FIRST_RAPTOR = "Hangar.1: First Raptor"
+    HANGAR_1_FIRST_RAPTOR = "Hangar.1: First Raptor destroyed"
+    HANGAR_1_METATRON_ORE = "Hangar.1: Heal yourself with the Metatron Ore"
     FACTORY_1_TWO_RAPTORS = "Factory.1: Destroy the two Raptors"
     FACTORY_1_TWO_MUMMYHEADS = "Factory.1: Destroy the two Mummyheads"
     FACTORY_1_NEITH = "Factory.1: Drive off Neith"
@@ -42,4 +43,5 @@ class ZOELOCATION:
     TOWN_2_JAVELIN_AMMO_2 = "Town.2: Obtain Javelin ammo (2)"
     TOWN_2_PHALANX_AMMO = "Town.2: Obtain Phalanx ammo"
     TOWN_2_SNIPER = "Town.2: Destroy the porters and retrieve the Sniper"
-    CITY_1_DESTROY_RELAY_BLOCK = "City.1: Shut down the force field"
+    CITY_1_DESTROY_RELAY_BLOCK = "City.1: Push the forcefield backwards"
+    UNLOCK_EPS = "Gain access to the EPS Antennas"
