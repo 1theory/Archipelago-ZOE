@@ -16,3 +16,5 @@ class ZOETAG:
     SQUADS_ENGAGED = "Squads Engaged"
     NOT_IMPLEMENTED = "Not Implemented"
     LEVEL = "Level"
+    AMMO = "Ammo" 
+    RESCUE = "Rescue" 

@@ -61,7 +61,7 @@ def create_itempool(world: "ZoeWorld") -> list[Item]:
         itempool += create_multiple_items(world, name, item_type)
 
     victory = create_item(world, ZOEITEM.VICTORY)
-    world.multiworld.get_location(ZOELOCATION.TOWN_1_TEMPEST, world.player).place_locked_item(victory)
+    world.multiworld.get_location(ZOELOCATION.CITY_1_DESTROY_RELAY_BLOCK, world.player).place_locked_item(victory)
     return itempool
 
 

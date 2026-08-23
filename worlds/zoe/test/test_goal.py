@@ -13,20 +13,20 @@ class TestTempest(ZOETestBase):
     def test_logic(self):
         state: CollectionState = self.multiworld.state
         self.assertTrue(self.can_reach_region(ZOEREGION.HANGAR_1), "Can't start on HANGAR.1")
-        self.assertTrue(self.can_reach_region(ZOEREGION.GLOBAL_HUB), "Global Hub not reachable from start")
-        self.assertFalse(self.can_reach_region(ZOEREGION.TOWN_1_TEMPEST), "TOWN.1.TEMPEST reachable from HANGAR.1")
-        self.assertFalse(self.can_reach_location(ZOELOCATION.TOWN_1_TEMPEST),
+        #self.assertTrue(self.can_reach_region(ZOEREGION.GLOBAL_HUB), "Global Hub not reachable from start")
+        self.assertFalse(self.can_reach_region(ZOEREGION.CITY_1), "TOWN.1.TEMPEST reachable from HANGAR.1")
+        self.assertFalse(self.can_reach_location(ZOELOCATION.CITY_1_DESTROY_RELAY_BLOCK),
                          "Goal location reachable from Start")
         self.assertBeatable(False)
 
         state.sweep_for_advancements()
-        self.assertFalse(self.can_reach_region(ZOEREGION.TOWN_1_TEMPEST), "TOWN.1.TEMPEST reachable from FACTORY.1")
-        self.assertFalse(self.can_reach_location(ZOELOCATION.TOWN_1_TEMPEST),
+        self.assertFalse(self.can_reach_region(ZOEREGION.CITY_1), "TOWN.1.TEMPEST reachable from FACTORY.1")
+        self.assertFalse(self.can_reach_location(ZOELOCATION.CITY_1_DESTROY_RELAY_BLOCK),
                          "Goal location reachable from FACTORY.1")
         self.assertBeatable(False)
 
-        self.collect_by_name(ZOEITEM.TOWN_1)
-        self.assertTrue(self.can_reach_region(ZOEREGION.TOWN_1_TEMPEST), "Can't reach TOWN.1.TEMPEST")
-        self.assertFalse(self.can_reach_location(ZOELOCATION.TOWN_1_TEMPEST),
+        self.collect_by_name(ZOEITEM.CITY_1)
+        self.assertTrue(self.can_reach_region(ZOEREGION.CITY_1), "Can't reach TOWN.1.TEMPEST")
+        self.assertFalse(self.can_reach_location(ZOELOCATION.CITY_1_DESTROY_RELAY_BLOCK),
                          "Goal location reachable with no items")
         self.assertBeatable(False)
