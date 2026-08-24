@@ -507,9 +507,10 @@ class ZoeInterface(GameInterface):
 
     def can_be_killed(self) -> bool:
         """Checks if the player can be killed based on the current game state."""
-        if self.main_menu is True or ZOESTATUS.STAND_BY_STATE == 0x01 or ZOESTATUS.PAUSE_STATE == 0x01:
+        if self.main_menu is True or ZOESTATUS.PAUSE_STATE == 0x01:
             return False
-        return True    
+        else:
+            return True 
 
     def kill_player(self) -> bool:
         """Checks the current game state to determine if and how to kill the player, returns success/failure"""
@@ -542,6 +543,7 @@ class ZoeInterface(GameInterface):
         self.passcode_cycler()
         #self.overflow_fix()
         self.respawn_local_servers()
+        self.area_unlock_cycler()
         self.timer_cycler()
 
     def module_cycler(self):
@@ -549,13 +551,13 @@ class ZoeInterface(GameInterface):
         if self.options.modules:
             READ_MONITOR_MODULE = ZOEFUNCTION.READ_MONITOR_MODULE_NTSC
             READ_FLIGHT_MODULE = ZOEFUNCTION.READ_FLIGHT_MODULE_NTSC
-            logger.info(f"Scouting module received: {self.UnlockItem[ZOEITEM.MONITOR_FCMD].status}")
+            #logger.info(f"Scouting module received: {self.UnlockItem[ZOEITEM.MONITOR_FCMD].status}")
             if self.UnlockItem[ZOEITEM.MONITOR_FCMD].status == 0:
-                self._write32(READ_MONITOR_MODULE, 0x8C820B24)
+                self._write32(READ_MONITOR_MODULE, 0x8C820B24) # overwrite the function that reads the module and makes it work to prevent using it while not receiving from the multiworld
             else:
-                self._write32(READ_MONITOR_MODULE, 0x8C820024)
+                self._write32(READ_MONITOR_MODULE, 0x8C820024) # reestablish the function if obtained from the multiworld
             if self.UnlockItem[ZOEITEM.GLOBAL_FCMD].status == 0:
-                self._write32(READ_FLIGHT_MODULE, 0x8C820B24)
+                self._write32(READ_FLIGHT_MODULE, 0x8C820B24) # similar to the above
             else:    
                 self._write32(READ_FLIGHT_MODULE, 0x8C820024)
 
@@ -570,6 +572,8 @@ class ZoeInterface(GameInterface):
                 else:
                     self._unwrite_bits(ZOESTATUS.OBTAINED_MODULES, {bit})
 
+            #TODO: research what the raptor control, anti-stealth and vaccine do (if they trigger game flags) and if they have different read addresses 
+
     def weapon_cycler(self):
         """Interval update function: Check unlock/lock status of weapons"""
         if self.options.weapons:
@@ -582,7 +586,7 @@ class ZoeInterface(GameInterface):
                         self.UnlockItem[name].unlock_delay = 0
                     else:
                         self.UnlockItem[name].unlock_delay += 1
-                    if name == ZOEITEM.DECOY or ZOEITEM.MUMMY:
+                    if name == ZOEITEM.DECOY or ZOEITEM.MUMMY: # the Decoy and the Mummy are both in the modules bitflag, this 'if' manages it
                         if self.UnlockItem[name].unlock_delay:
                             self._write_bits(ZOESTATUS.OBTAINED_MODULES, {bit_set})
                             self.UnlockItem[name].unlock_delay = 0
@@ -590,7 +594,7 @@ class ZoeInterface(GameInterface):
                             self.UnlockItem[name].unlock_delay += 1
                 else:
                     # Prevent the player from using locked weapons
-                    if name != ZOEITEM.DECOY or ZOEITEM.MUMMY:
+                    if name != ZOEITEM.DECOY or ZOEITEM.MUMMY: # if the state is false and the weapon is neither the Decoy or the Mummy, prevent the use of the others
                         self._unwrite_bits(ZOESTATUS.OBTAINED_WEAPONS, {bit_set})
                         self._write8(ammo_addr, 0)
                     if name == ZOEITEM.DECOY or ZOEITEM.MUMMY:
@@ -599,7 +603,7 @@ class ZoeInterface(GameInterface):
                             self._write8(ammo_addr, 0)
 
     def info_cycler(self):
-        """Cycles through each info and updates their state"""
+        """Cycles through each info (just antilia.info) and updates its state"""
         if self.options.infos:
             for name in info_data.keys():
                 bit = info_data[name].BITSET
@@ -611,17 +615,19 @@ class ZoeInterface(GameInterface):
                         self.UnlockItem[name].unlock_delay += 1
                 else:
                     self._unwrite_bits(ZOESTATUS.OBTAINED_INFO, {bit})
+                    if self._read(ZOESTATUS.STORY_PROGRESS) > 0x08: # prevent unlocking both the cutscene and the EPS.1 and EPS.2 areas without the info
+                        self._write8(ZOESTATUS.STORY_PROGRESS, 0x08) 
 
     def passcode_cycler(self):
         """Cycles through each passcode item and location and updates their state"""
         if self.options.passcodes_items:
             WRITE_PASSCODES = ZOEFUNCTION.WRITE_PASSCODES_NTSC
-            self._write32(WRITE_PASSCODES, 0xACA20B1C)
+            self._write32(WRITE_PASSCODES, 0xACA20B1C) # prevent game from reading vanilla-obtained passcodes by writing them somewhere else
             for name in passcode_data.keys():
                 bit = passcode_data[name].BITSET
                 if self.UnlockItem[name].status:
                     if self.UnlockItem[name.unlock_delay]:
-                        self._write_bits(ZOESTATUS.OBTAINED_PASSCODES, {bit})
+                        self._write_bits(ZOESTATUS.OBTAINED_PASSCODES, {bit}) # write the specified bit to the passcode address
                         self.UnlockItem[name].unlock_delay = 0
                     else:
                         self.UnlockItem[name].unlock_delay += 1
@@ -629,25 +635,18 @@ class ZoeInterface(GameInterface):
                                 ZOEITEM.PASS_CONTROL1 or ZOEITEM.PASS_CONTROL2 or
                                 ZOEITEM.PASS_VACCINE or ZOEITEM.PASS_ANTILLIA):
                         if self.UnlockItem[name.unlock_delay]:
-                             self._write_bits(ZOESTATUS.OBTAINED_PASSCODES_2, {bit})
+                             self._write_bits(ZOESTATUS.OBTAINED_PASSCODES_2, {bit}) # write the specified bit to the SPECIFIC passcode address
                              self.UnlockItem[name].unlock_delay = 0
                         else:
                             self.UnlockItem[name].unlock_delay += 1
                         
-                else:
+                else: # unwrite bits from vanilla-obtained passcodes in case the instruction fails
                     if name == (ZOEITEM.PASS_DECOY2 or ZOEITEM.PASS_GLOBAL or
                                 ZOEITEM.PASS_CONTROL1 or ZOEITEM.PASS_CONTROL2 or
                                 ZOEITEM.PASS_VACCINE or ZOEITEM.PASS_ANTILLIA):
                         self._unwrite_bits(ZOESTATUS.OBTAINED_PASSCODES_2, {bit})
                     else:
                         self._unwrite_bits(ZOESTATUS.OBTAINED_PASSCODES, {bit})
-
-
-    def overflow_fix(self):
-        """Detect any integer overflows and reset the value"""
-        if self.jehuty_exp > 0x7FFF:
-            self._write16(ZOESTATUS.PLAYER_EXPERIENCE, 0)
-        # If other stuff needs overflow fixing, add here
 
     def timer_cycler(self):
         """Cycle through the timer dictionary, check their duration, and handle their effects"""
@@ -675,16 +674,26 @@ class ZoeInterface(GameInterface):
     def respawn_local_servers(self):
         """Respawn local servers if the associated location isn't checked but the local server's associated program is unlocked through AP"""
         if self.options.local_server:
-            if (self.UnlockItem[ZOEITEM.MONITOR_FCMD].status
+            if (self.UnlockItem[ZOEITEM.MONITOR_FCMD].status # if player has the monitor.fcmd but has not checked the local server loc., overwrite the address that reads it
                 and ZOELOCATION.FACTORY_1_SCOUTING_MODULE_LOCAL_SERVER not in self.checked_locations
-                and self.area == ZOEREGION.FACTORY_1 or ZOEREGION.HANGAR_1 and ZOESTATUS.STORY_PROGRESS <= 0x02):
+                and self.area == ZOEREGION.FACTORY_1 or ZOEREGION.HANGAR_1 and ZOESTATUS.STORY_PROGRESS <= 0x02): 
                 self._write32(ZOEFUNCTION.READ_MODULES_NTSC, 0x8C820C24)
 
             if (self.UnlockItem[ZOEITEM.GLOBAL_FCMD].status
                 and ZOELOCATION.FACTORY_1_FLIGHT_MODULE_LOCAL_SERVER not in self.checked_locations
                 and self.area == ZOEREGION.FACTORY_1 or ZOEREGION.HANGAR_1 and ZOESTATUS.STORY_PROGRESS <= 0x02):
                 self._write32(ZOEFUNCTION.READ_MODULES_NTSC, 0x8C820C24)
-                self._write32(ZOEFUNCTION.READ_BLOCKED_MODULES_NTSC, 0x8C620C24)
+                self._write32(ZOEFUNCTION.READ_BLOCKED_MODULES_NTSC, 0x8C620C24) # in case the player has the global.fcmd without checking its local server while it is blocked
+
+        #TODO: research if it is needed for other servers and find their reading address if it is different
+
+    def area_unlock_cycler(self):
+        """Try to prevent the player from accessing locked areas""" # making the player access to unlocked areas is unviable at the moment because area unlocks are directly linked to story progress
+        for name in area_data.keys():
+            if self.UnlockItem[ZOEITEM.TOWN_1].status == 0 and ZOESTATUS.CURRENT_AREA == ZOEREGION.GLOBAL_HUB:
+                self._write32(ZOEFUNCTION.CIRCLE_INPUT, 0x97A60000) # prevent the player from entering TOWN.1
+
+    #TODO: find a way to check the current area below in GLOBAL.HUB to succesfully prevent entering locked areas by checking that and not just globally disabling the circle press
 
     def update_save(self) -> dict[int, tuple[int, int]]:
         """Check if the game save is different to the server"""
