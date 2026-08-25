@@ -676,12 +676,12 @@ class ZoeInterface(GameInterface):
         if self.options.local_server:
             if (self.UnlockItem[ZOEITEM.MONITOR_FCMD].status # if player has the monitor.fcmd but has not checked the local server loc., overwrite the address that reads it
                 and ZOELOCATION.FACTORY_1_SCOUTING_MODULE_LOCAL_SERVER not in self.checked_locations
-                and self.area == ZOEREGION.FACTORY_1 or ZOEREGION.HANGAR_1 and ZOESTATUS.STORY_PROGRESS <= 0x02): 
+                and self.area == ZOEREGION.FACTORY_1 or ZOEREGION.HANGAR_1 and self._read8(ZOESTATUS.STORY_PROGRESS) <= 0x02): 
                 self._write32(ZOEFUNCTION.READ_MODULES_NTSC, 0x8C820C24)
 
             if (self.UnlockItem[ZOEITEM.GLOBAL_FCMD].status
                 and ZOELOCATION.FACTORY_1_FLIGHT_MODULE_LOCAL_SERVER not in self.checked_locations
-                and self.area == ZOEREGION.FACTORY_1 or ZOEREGION.HANGAR_1 and ZOESTATUS.STORY_PROGRESS <= 0x02):
+                and self.area == ZOEREGION.FACTORY_1 or ZOEREGION.HANGAR_1 and self._read8(ZOESTATUS.STORY_PROGRESS) <= 0x02):
                 self._write32(ZOEFUNCTION.READ_MODULES_NTSC, 0x8C820C24)
                 self._write32(ZOEFUNCTION.READ_BLOCKED_MODULES_NTSC, 0x8C620C24) # in case the player has the global.fcmd without checking its local server while it is blocked
 
@@ -690,10 +690,18 @@ class ZoeInterface(GameInterface):
     def area_unlock_cycler(self):
         """Try to prevent the player from accessing locked areas""" # making the player access to unlocked areas is unviable at the moment because area unlocks are directly linked to story progress
         for name in area_data.keys():
-            if self.UnlockItem[ZOEITEM.TOWN_1].status == 0 and ZOESTATUS.CURRENT_AREA == ZOEREGION.GLOBAL_HUB:
+            if self.UnlockItem[ZOEITEM.TOWN_1].status == 0 and self._read8(ZOESTATUS.CURRENT_AREA) == ZOEREGION.GLOBAL_HUB:
                 self._write32(ZOEFUNCTION.CIRCLE_INPUT, 0x97A60000) # prevent the player from entering TOWN.1
+        if (ZOELOCATION.TOWN_1_TEMPEST not in self.checked_locations and self._read8(ZOESTATUS.STORY_PROGRESS) >= 0x05):
+            self._write8(ZOESTATUS.STORY_PROGRESS, 0x04) # failsafe in case somehow the player progresses further without destroying Tempest
+        if (self.UnlockItem[ZOEITEM.ANTILLIA_INFO].status == 1 and self._read8(ZOESTATUS.STORY_PROGRESS) <= 0x08
+            and ZOELOCATION.TOWN_1_TEMPEST in self.self.checked_locations):
+            self._write8(ZOESTATUS.STORY_PROGRESS, 0x09) # force the antilia.info use if collected and Tempest is destroyed           
 
-    #TODO: find a way to check the current area below in GLOBAL.HUB to succesfully prevent entering locked areas by checking that and not just globally disabling the circle press
+        #TODO: research the loading areas instructions to see if we can overwrite them somehow
+        #TODO: use the global.hub barrier to our advantage. we can position and/or activate/deactivate it wherever
+        #TODO: add more story progress failsafes for rescue missions
+        #TODO: find a way to check the current area while in GLOBAL.HUB to succesfully prevent entering locked areas by checking that and not just globally disabling the circle press
 
     def update_save(self) -> dict[int, tuple[int, int]]:
         """Check if the game save is different to the server"""
