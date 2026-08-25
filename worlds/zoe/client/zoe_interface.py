@@ -544,6 +544,7 @@ class ZoeInterface(GameInterface):
         #self.overflow_fix()
         self.respawn_local_servers()
         self.area_unlock_cycler()
+        self.progress_flag_cycler()
         self.timer_cycler()
 
     def module_cycler(self):
@@ -689,19 +690,36 @@ class ZoeInterface(GameInterface):
 
     def area_unlock_cycler(self):
         """Try to prevent the player from accessing locked areas""" # making the player access to unlocked areas is unviable at the moment because area unlocks are directly linked to story progress
-        for name in area_data.keys():
-            if self.UnlockItem[ZOEITEM.TOWN_1].status == 0 and self._read8(ZOESTATUS.CURRENT_AREA) == ZOEREGION.GLOBAL_HUB:
-                self._write32(ZOEFUNCTION.CIRCLE_INPUT, 0x97A60000) # prevent the player from entering TOWN.1
-        if (ZOELOCATION.TOWN_1_TEMPEST not in self.checked_locations and self._read8(ZOESTATUS.STORY_PROGRESS) >= 0x05):
-            self._write8(ZOESTATUS.STORY_PROGRESS, 0x04) # failsafe in case somehow the player progresses further without destroying Tempest
-        if (self.UnlockItem[ZOEITEM.ANTILLIA_INFO].status == 1 and self._read8(ZOESTATUS.STORY_PROGRESS) <= 0x08
-            and ZOELOCATION.TOWN_1_TEMPEST in self.self.checked_locations):
-            self._write8(ZOESTATUS.STORY_PROGRESS, 0x09) # force the antilia.info use if collected and Tempest is destroyed           
+        if self.UnlockItem[ZOEITEM.TOWN_1].status == 0 and self._read8(ZOESTATUS.CURRENT_AREA) == ZOEREGION.GLOBAL_HUB:
+                self._write32(ZOEFUNCTION.CIRCLE_INPUT, 0x97A60000) # prevent the player from entering TOWN.1      
 
         #TODO: research the loading areas instructions to see if we can overwrite them somehow
         #TODO: use the global.hub barrier to our advantage. we can position and/or activate/deactivate it wherever
         #TODO: add more story progress failsafes for rescue missions
         #TODO: find a way to check the current area while in GLOBAL.HUB to succesfully prevent entering locked areas by checking that and not just globally disabling the circle press
+
+    def progress_flag_cycler(self):
+        "Since Zoe is a very linear game and the progress is linked to area unlocks, this will need to be tampered with in order to be able to be randomized"
+        PROGRESS_FLAG = ZOESTATUS.STORY_PROGRESS
+        CHECKED = self.checked_locations
+        TEMPEST = ZOELOCATION.TOWN_1_TEMPEST
+        FLY_AWAY = ZOELOCATION.FACTORY_1_FLY_AWAY
+        FACTORY_1 = ZOEREGION.FACTORY_1
+        CURRENT_AREA = ZOESTATUS.CURRENT_AREA
+        INTRO_SEQUENCE = ZOELOCATION.HANGAR_1_FIRST_RAPTOR, ZOELOCATION.HANGAR_1_METATRON_ORE, ZOELOCATION.FACTORY_1_TWO_RAPTORS, ZOELOCATION.FACTORY_1_TWO_MUMMYHEADS, ZOELOCATION.FACTORY_1_NEITH
+
+        if [INTRO_SEQUENCE] not in CHECKED and self._read8(PROGRESS_FLAG) > 0x02:
+            self._write8(PROGRESS_FLAG, 0x01) # prevents the intro sequence from not being played
+        if FLY_AWAY not in CHECKED and self._read8(PROGRESS_FLAG) > 0x04 and CURRENT_AREA == FACTORY_1:
+            self._write8(PROGRESS_FLAG, 0x03) # prevents softlock of this location
+        if TEMPEST not in CHECKED and self._read8(PROGRESS_FLAG) >= 0x05:
+            self._write8(PROGRESS_FLAG, 0x04) # failsafe in case somehow the player progresses further without destroying Tempest
+        if TEMPEST in CHECKED and self._read8(PROGRESS_FLAG) <= 0x04:
+            self._write8(PROGRESS_FLAG, 0x05) # you already beat Tempest   
+        if (self.UnlockItem[ZOEITEM.ANTILLIA_INFO].status == 1 and self._read8(PROGRESS_FLAG) <= 0x08
+            and TEMPEST in CHECKED):
+            self._write8(PROGRESS_FLAG, 0x09) # force the antilia.info use if collected and Tempest is destroyed  
+
 
     def update_save(self) -> dict[int, tuple[int, int]]:
         """Check if the game save is different to the server"""
