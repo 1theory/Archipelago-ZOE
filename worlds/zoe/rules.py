@@ -60,11 +60,19 @@ def set_rules(world: "ZoeWorld"):
     rules_dict: dict[str, Callable] = {
 
         ZOEENEMYCOUNT.ENEMIES_DESTROYED_15:
-            lambda state: state.can_reach_region(ZOEREGION.TOWN_1, world.player),
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.TOWN_1], world.player),
+        ZOEENEMYCOUNT.ENEMIES_DESTROYED_20:
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.TOWN_1], world.player),
         ZOEENEMYCOUNT.ENEMIES_DESTROYED_25:
-            lambda state: state.can_reach_region(ZOEREGION.TOWN_2, world.player),
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.TOWN_2], world.player),
+        ZOEENEMYCOUNT.ENEMIES_DESTROYED_30:
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.TOWN_2], world.player),
+        ZOEENEMYCOUNT.ENEMIES_DESTROYED_35:
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.TOWN_2], world.player),
+        ZOEENEMYCOUNT.ENEMIES_DESTROYED_45:
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
         ZOEENEMYCOUNT.ENEMIES_DESTROYED_50:
-            lambda state: state.can_reach_region(ZOEREGION.CITY_1, world.player),
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
 
         ZOELOCATION.FACTORY_1_FLY_AWAY:
             lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD], world.player),

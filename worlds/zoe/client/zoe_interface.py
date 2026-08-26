@@ -616,7 +616,7 @@ class ZoeInterface(GameInterface):
                         self.UnlockItem[name].unlock_delay += 1
                 else:
                     self._unwrite_bits(ZOESTATUS.OBTAINED_INFO, {bit})
-                    if self._read(ZOESTATUS.STORY_PROGRESS) > 0x08: # prevent unlocking both the cutscene and the EPS.1 and EPS.2 areas without the info
+                    if self._read8(ZOESTATUS.STORY_PROGRESS) > 0x08: # prevent unlocking both the cutscene and the EPS.1 and EPS.2 areas without the info
                         self._write8(ZOESTATUS.STORY_PROGRESS, 0x08) 
 
     def passcode_cycler(self):
@@ -708,14 +708,14 @@ class ZoeInterface(GameInterface):
         CURRENT_AREA = ZOESTATUS.CURRENT_AREA
         INTRO_SEQUENCE = ZOELOCATION.HANGAR_1_FIRST_RAPTOR, ZOELOCATION.HANGAR_1_METATRON_ORE, ZOELOCATION.FACTORY_1_TWO_RAPTORS, ZOELOCATION.FACTORY_1_TWO_MUMMYHEADS, ZOELOCATION.FACTORY_1_NEITH
 
-        if [INTRO_SEQUENCE] not in CHECKED and self._read8(PROGRESS_FLAG) > 0x02:
+        if INTRO_SEQUENCE not in CHECKED and self._read8(PROGRESS_FLAG) > 0x02:
             self._write8(PROGRESS_FLAG, 0x01) # prevents the intro sequence from not being played
         if FLY_AWAY not in CHECKED and self._read8(PROGRESS_FLAG) > 0x04 and CURRENT_AREA == FACTORY_1:
-            self._write8(PROGRESS_FLAG, 0x03) # prevents softlock of this location
+            self._write8(PROGRESS_FLAG, 0x03) # prevents a softlock of this location
         if TEMPEST not in CHECKED and self._read8(PROGRESS_FLAG) >= 0x05:
-            self._write8(PROGRESS_FLAG, 0x04) # failsafe in case somehow the player progresses further without destroying Tempest
+            self._write8(PROGRESS_FLAG, 0x04) # prevents a case where somehow the player progresses further without destroying Tempest
         if TEMPEST in CHECKED and self._read8(PROGRESS_FLAG) <= 0x04:
-            self._write8(PROGRESS_FLAG, 0x05) # you already beat Tempest   
+            self._write8(PROGRESS_FLAG, 0x05) # you already beat Tempest, you won't face him again   
         if (self.UnlockItem[ZOEITEM.ANTILLIA_INFO].status == 1 and self._read8(PROGRESS_FLAG) <= 0x08
             and TEMPEST in CHECKED):
             self._write8(PROGRESS_FLAG, 0x09) # force the antilia.info use if collected and Tempest is destroyed  

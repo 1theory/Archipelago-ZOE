@@ -3,12 +3,12 @@
 
 class ZOEITEM:
     """Item name strings"""
-    MONITOR_FCMD = "monitor.fcmd: Scouting Mode Module"
-    GLOBAL_FCMD = "global.fcmd: Flying Mode Module"
-    RAPTR_CTRL_FCMD = "raptr_ctrl.fcmd: Raptor Control Module"
-    DETECTOR_FCMD = "detector.fcmd: Anti-Stealth Module"
+    MONITOR_FCMD = "Scouting Mode Module"
+    GLOBAL_FCMD = "Flying Mode Module"
+    RAPTR_CTRL_FCMD = "Raptor Control Module"
+    DETECTOR_FCMD = "Anti-Stealth Module"
     VIRUS_XXXX = "Virus.xxxx"
-    VACCINE_EXEC = "vaccine.exec: Vaccine Module"
+    VACCINE_EXEC = "Vaccine Module"
 
     ANTILLIA_INFO = "EPS System Data: antillia.info"
     INFO_B_INF = "Unused Info B"
