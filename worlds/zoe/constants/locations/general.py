@@ -45,3 +45,4 @@ class ZOELOCATION:
     TOWN_2_SNIPER = "Town.2: Destroy the porters and retrieve the Sniper"
     CITY_1_DESTROY_RELAY_BLOCK = "City.1: Push the forcefield backwards"
     UNLOCK_EPS = "Gain access to the EPS Antennas"
+    

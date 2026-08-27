@@ -10,10 +10,12 @@ from worlds.zoe.constants.data.item import area_data, weapon_data
 from worlds.zoe.constants.items import ZOEITEM
 from worlds.zoe.constants.locations.general import ZOELOCATION
 from worlds.zoe.constants.locations.enemy_count import ZOEENEMYCOUNT
+from worlds.zoe.constants.locations.squads_engaged import ZOESQUADENGAGE
 from worlds.zoe.constants.locations.tags import ZOETAG
 from worlds.zoe.constants.options import ZOEOPTION
 from worlds.zoe.constants.region import ZOEREGION
 from worlds.zoe.locations import location_groups
+from rule_builder.rules import (Rule, CanReachEntrance, Has, HasAll, HasAny, OptionFilter, True_, CanReachLocation)
 
 if TYPE_CHECKING:
     from worlds.zoe.world import ZoeWorld
@@ -37,9 +39,13 @@ def set_rules(world: "ZoeWorld"):
         # Intro Hangar.1
         f"{ZOEREGION.HANGAR_1} -> {ZOEREGION.FACTORY_1}":
             lambda state: state.has(ZOEITEM.FACTORY_1, world.player),
+
         # Intro Factory.1
         f"{ZOEREGION.FACTORY_1} -> {ZOEREGION.GLOBAL_HUB}":
             lambda state: state.has_all([ZOEITEM.GLOBAL_HUB, ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD], world.player),
+
+        f"{ZOEREGION.FACTORY_1} -> {ZOEREGION.VR_TRAINING}":
+            lambda state: state.can_reach_location(ZOELOCATION.FACTORY_1_NEITH, world.player),
 
         f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.FACTORY_1}":
             lambda state: state.has(ZOEITEM.FACTORY_1, world.player),
@@ -59,6 +65,10 @@ def set_rules(world: "ZoeWorld"):
 
     rules_dict: dict[str, Callable] = {
 
+        ZOEENEMYCOUNT.ENEMIES_DESTROYED_5:
+            lambda state: state.can_reach_region(ZOEREGION.FACTORY_1, world.player),
+        ZOEENEMYCOUNT.ENEMIES_DESTROYED_10:
+            lambda state: state.can_reach_region(ZOEREGION.FACTORY_1, world.player),
         ZOEENEMYCOUNT.ENEMIES_DESTROYED_15:
             lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.TOWN_1], world.player),
         ZOEENEMYCOUNT.ENEMIES_DESTROYED_20:
@@ -69,10 +79,35 @@ def set_rules(world: "ZoeWorld"):
             lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.TOWN_2], world.player),
         ZOEENEMYCOUNT.ENEMIES_DESTROYED_35:
             lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.TOWN_2], world.player),
+        ZOEENEMYCOUNT.ENEMIES_DESTROYED_40:
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
         ZOEENEMYCOUNT.ENEMIES_DESTROYED_45:
             lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
         ZOEENEMYCOUNT.ENEMIES_DESTROYED_50:
             lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
+        ZOEENEMYCOUNT.ENEMIES_DESTROYED_55:
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
+        ZOEENEMYCOUNT.ENEMIES_DESTROYED_60:
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
+        ZOEENEMYCOUNT.ENEMIES_DESTROYED_65:
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
+        ZOEENEMYCOUNT.ENEMIES_DESTROYED_70:
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
+        ZOEENEMYCOUNT.ENEMIES_DESTROYED_75:
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
+        ZOEENEMYCOUNT.ENEMIES_DESTROYED_80:
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
+        ZOEENEMYCOUNT.ENEMIES_DESTROYED_85:
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
+
+        ZOESQUADENGAGE.SQUADS_ENGAGED_2:
+            lambda state: state.can_reach_region(ZOEREGION.FACTORY_1, world.player),
+        ZOESQUADENGAGE.SQUADS_ENGAGED_3:
+            lambda state: state.can_reach_location(ZOELOCATION.FACTORY_1_SCOUTING_MODULE_LOCAL_SERVER, world.player),
+        ZOESQUADENGAGE.SQUADS_ENGAGED_4:
+            lambda state: state.can_reach_location(ZOELOCATION.FACTORY_1_SCOUTING_MODULE_LOCAL_SERVER, world.player),
+        ZOESQUADENGAGE.SQUADS_ENGAGED_5:
+            lambda state: state.can_reach_location(ZOELOCATION.FACTORY_1_SCOUTING_MODULE_LOCAL_SERVER, world.player),
 
         ZOELOCATION.FACTORY_1_FLY_AWAY:
             lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD], world.player),

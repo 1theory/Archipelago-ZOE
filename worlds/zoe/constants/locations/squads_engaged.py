@@ -8,8 +8,3 @@ class ZOESQUADENGAGE:
     SQUADS_ENGAGED_3 = "Squads Engage Milestone: 3"
     SQUADS_ENGAGED_4 = "Squads Engage Milestone: 4"
     SQUADS_ENGAGED_5 = "Squads Engage Milestone: 5"
-    SQUADS_ENGAGED_6 = "Squads Engage Milestone: 6"
-    SQUADS_ENGAGED_7 = "Squads Engage Milestone: 7"
-    SQUADS_ENGAGED_8 = "Squads Engage Milestone: 8"
-    SQUADS_ENGAGED_9 = "Squads Engage Milestone: 9"
-    SQUADS_ENGAGED_10 = "Squads Engage Milestone: 10"
