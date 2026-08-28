@@ -54,13 +54,57 @@ def set_rules(world: "ZoeWorld"):
             lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.TOWN_1], world.player),
 
         f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.TOWN_1}":
-            lambda state: state.has(ZOEITEM.TOWN_1, world.player),
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.TOWN_1], world.player),
 
         f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.TOWN_2}":
-            lambda state: state.has(ZOEITEM.TOWN_2, world.player),
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.TOWN_2], world.player),
 
         f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.CITY_1}":
-            lambda state: state.has(ZOEITEM.CITY_1, world.player),            
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1,
+                                         ZOEITEM.ANTILLIA_INFO], world.player),
+
+        f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.EPS_1}":
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.EPS_1], world.player)
+                        and state.can_reach_location(ZOELOCATION.CITY_1_DESTROY_RELAY_BLOCK, world.player),
+
+        f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.EPS_2}":
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.EPS_2], world.player)
+                        and state.can_reach_location(ZOELOCATION.CITY_1_DESTROY_RELAY_BLOCK, world.player),
+
+        f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.TOWN_3}":
+            lambda state: state.can_reach_location(ZOELOCATION.EPS_2_FORCEFIELD_DOWN, world.player)
+                        and state.has(ZOEITEM.TOWN_3, world.player),
+
+        f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.CITY_2}":
+            lambda state: state.can_reach_location(ZOELOCATION.EPS_2_FORCEFIELD_DOWN, world.player)
+                        and state.has(ZOEITEM.CITY_2, world.player),
+
+        f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.PARK_1}":
+            lambda state: state.can_reach_location(ZOELOCATION.EPS_2_FORCEFIELD_DOWN, world.player)
+                        and state.has(ZOEITEM.PARK_1, world.player),
+
+        f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.FACTORY_2}":
+            lambda state: state.can_reach_location(ZOELOCATION.EPS_2_FORCEFIELD_DOWN, world.player)
+                        and state.has(ZOEITEM.FACTORY_2, world.player),
+
+        f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.MOUNTAIN_1}":
+            lambda state: state.can_reach_location(ZOELOCATION.PARK_1_TYRANT, world.player)
+                        and state.has(ZOEITEM.MOUNTAIN_1, world.player),
+
+        f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.MOUNTAIN_1_NEBULA}":
+            lambda state: state.can_reach_region(ZOEREGION.MOUNTAIN_1, world.player),
+
+        f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.WAREHOUSE_1}":
+            lambda state: state.can_reach_region(ZOEREGION.MOUNTAIN_1, world.player),
+
+        f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.TUNNEL_1}":
+            lambda state: state.can_reach_region(ZOEREGION.MOUNTAIN_1, world.player),
+
+        f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.HUB_1}":
+            lambda state: state.can_reach_region(ZOEREGION.MOUNTAIN_1, world.player),         
+
+        f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.ATLANTIS_1}":
+            lambda state: state.can_reach_region(ZOEREGION.MOUNTAIN_1, world.player),          
     }
 
     rules_dict: dict[str, Callable] = {
@@ -94,11 +138,17 @@ def set_rules(world: "ZoeWorld"):
         ZOEENEMYCOUNT.ENEMIES_DESTROYED_70:
             lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
         ZOEENEMYCOUNT.ENEMIES_DESTROYED_75:
-            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.EPS_1], world.player),
         ZOEENEMYCOUNT.ENEMIES_DESTROYED_80:
-            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.EPS_1], world.player),
         ZOEENEMYCOUNT.ENEMIES_DESTROYED_85:
-            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.EPS_1], world.player),
+        ZOEENEMYCOUNT.ENEMIES_DESTROYED_90:
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.EPS_1], world.player),
+        ZOEENEMYCOUNT.ENEMIES_DESTROYED_95:
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_2], world.player),
+        ZOEENEMYCOUNT.ENEMIES_DESTROYED_100:
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_2], world.player),
 
         ZOESQUADENGAGE.SQUADS_ENGAGED_2:
             lambda state: state.can_reach_region(ZOEREGION.FACTORY_1, world.player),
@@ -145,6 +195,18 @@ def set_rules(world: "ZoeWorld"):
             lambda state: state.can_reach_region(ZOEREGION.CITY_1, world.player),    
         ZOELOCATION.CITY_1_DESTROY_RELAY_BLOCK:
             lambda state: state.has(ZOEITEM.SNIPER, world.player),
+        ZOELOCATION.UNLOCK_EPS:
+            lambda state: state.can_reach_location(ZOELOCATION.CITY_1_DESTROY_RELAY_BLOCK, world.player),
+        ZOELOCATION.CITY_1_MUMMY:
+            lambda state: state.can_reach_location(ZOELOCATION.EPS_1_GENERATOR_DESTROYED, world.player),
+        ZOELOCATION.TOWN_1_CONTROL2_PASSCODE:
+            lambda state: state.can_reach_region(ZOEREGION.EPS_2, world.player),
+        ZOELOCATION.EPS_1_RAPTOR_CONTROL_MODULE_LOCAL_SERVER:
+            lambda state: state.can_reach_region(ZOEREGION.EPS_2, world.player),
+        ZOELOCATION.TOWN_2_CONTROL_RAPTOR:
+            lambda state: state.has(ZOEITEM.RAPTR_CTRL_FCMD, world.player)
+                        and state.can_reach_region(ZOEREGION.EPS_2, world.player),
+
     }
 
     for region in world.multiworld.get_regions(world.player):

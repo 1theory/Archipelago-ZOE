@@ -21,4 +21,7 @@ class ZOEENEMYCOUNT:
     ENEMIES_DESTROYED_75 = "Enemy Count Milestone: 75"
     ENEMIES_DESTROYED_80 = "Enemy Count Milestone: 80"
     ENEMIES_DESTROYED_85 = "Enemy Count Milestone: 85"
+    ENEMIES_DESTROYED_90 = "Enemy Count Milestone: 90"
+    ENEMIES_DESTROYED_95 = "Enemy Count Milestone: 95"
+    ENEMIES_DESTROYED_100 = "Enemy Count Milestone: 100"
 

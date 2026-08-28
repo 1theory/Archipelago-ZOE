@@ -36,6 +36,27 @@ def create_regions(world: "ZoeWorld"):
                               f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.TOWN_2}", global_hub)
     create_region_and_connect(world, ZOEREGION.CITY_1,
                               f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.CITY_1}", global_hub)    
+    create_region_and_connect(world, ZOEREGION.EPS_1,
+                              f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.EPS_1}", global_hub)    
+    create_region_and_connect(world, ZOEREGION.EPS_2,
+                              f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.EPS_2}", global_hub)    
+    create_region_and_connect(world, ZOEREGION.TOWN_3,
+                              f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.TOWN_3}", global_hub)    
+    create_region_and_connect(world, ZOEREGION.CITY_2,
+                              f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.CITY_2}", global_hub)    
+    create_region_and_connect(world, ZOEREGION.PARK_1,
+                              f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.PARK_1}", global_hub)    
+    create_region_and_connect(world, ZOEREGION.MOUNTAIN_1,
+                              f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.MOUNTAIN_1}", global_hub)    
+    create_region_and_connect(world, ZOEREGION.MOUNTAIN_1_NEBULA,
+                              f"{ZOEREGION.MOUNTAIN_1} -> {ZOEREGION.MOUNTAIN_1_NEBULA}", global_hub)    
+    create_region_and_connect(world, ZOEREGION.WAREHOUSE_1,
+                              f"{ZOEREGION.MOUNTAIN_1_NEBULA} -> {ZOEREGION.WAREHOUSE_1}", global_hub)    
+    create_region_and_connect(world, ZOEREGION.HUB_1,
+                              f"{ZOEREGION.WAREHOUSE_1} -> {ZOEREGION.HUB_1}", global_hub)    
+    create_region_and_connect(world, ZOEREGION.ATLANTIS_1,
+                              f"{ZOEREGION.HUB_1} -> {ZOEREGION.ATLANTIS_1}", global_hub)    
+    
 
     # ----- Regions for other stuff -----#
     create_region_and_connect(world, ZOEREGION.ENEMYCOUNT, f"{ZOEREGION.MENU} -> {ZOEREGION.ENEMYCOUNT}", menu)
