@@ -21,6 +21,7 @@ class ZOEOPTION:
     PASSCODES_ITEMS = "Passcodes Items"
     PASSCODES_LOCS = "Passcodes Locations"
     VRTRAINING = "VR Training"
+    LINEAR_PLAY = "Linear Progression"
     FILLER_WEIGHT = "Filler Weight"
     ENABLE_TRAPS = "Enable Traps"
     TRAP_WEIGHT = "Trap Weight"

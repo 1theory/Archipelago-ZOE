@@ -690,8 +690,8 @@ class ZoeInterface(GameInterface):
 
     def area_unlock_cycler(self):
         """Try to prevent the player from accessing locked areas""" # making the player access to unlocked areas is unviable at the moment because area unlocks are directly linked to story progress
-        if self.UnlockItem[ZOEITEM.TOWN_1].status == 0 and self._read8(ZOESTATUS.CURRENT_AREA) == ZOEREGION.GLOBAL_HUB:
-                self._write32(ZOEFUNCTION.CIRCLE_INPUT, 0x97A60000) # prevent the player from entering TOWN.1      
+        #if self.UnlockItem[ZOEITEM.TOWN_1].status == 0 and self._read8(ZOESTATUS.CURRENT_AREA) == ZOEREGION.GLOBAL_HUB:
+        #        self._write32(ZOEFUNCTION.CIRCLE_INPUT, 0x97A60000) # prevent the player from entering TOWN.1      
 
         #TODO: research the loading areas instructions to see if we can overwrite them somehow
         #TODO: use the global.hub barrier to our advantage. we can position and/or activate/deactivate it wherever

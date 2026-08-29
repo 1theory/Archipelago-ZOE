@@ -9,6 +9,7 @@ from worlds.zoe.constants.data.item import item_groups, ZOE_ITEM_DATA_TABLE
 from worlds.zoe.constants.items import ZOEITEM
 from worlds.zoe.constants.locations.visit_area import ZOEVISIT
 from worlds.zoe.constants.locations.general import ZOELOCATION
+from worlds.zoe.constants.locations.area_unlock import ZOEAREA
 from worlds.zoe.constants.options import ZOEOPTION
 from worlds.zoe.items import (create_item, create_itempool, get_filler_selection, process_start_inventory, starting_areas)
 from worlds.zoe.locations import get_level_locations, get_location_names, get_total_locations, location_groups
@@ -74,16 +75,41 @@ class ZoeWorld(World):
 
         self.get_location(ZOEVISIT.HANGAR_1_VISIT).place_locked_item(
             self.create_item(ZOEITEM.HANGAR_1))     
-        self.get_location(ZOELOCATION.HANGAR_1_METATRON_ORE).place_locked_item(
+        self.get_location(ZOEAREA.FACTORY_1_UNLOCKED).place_locked_item(
             self.create_item(ZOEITEM.FACTORY_1))                     
-        self.get_location(ZOELOCATION.FACTORY_1_NEITH).place_locked_item(
+        self.get_location(ZOEAREA.GLOBAL_HUB_UNLOCKED).place_locked_item(
             self.create_item(ZOEITEM.GLOBAL_HUB))
-        self.get_location(ZOELOCATION.FACTORY_1_FLY_AWAY).place_locked_item(
-            self.create_item(ZOEITEM.TOWN_1))     
+        self.get_location(ZOEAREA.TOWN_1_UNLOCKED).place_locked_item(
+            self.create_item(ZOEITEM.TOWN_1))
+        if self.options.linear_play.value:     
+            self.get_location(ZOEAREA.TOWN_2_UNLOCKED).place_locked_item(
+                self.create_item(ZOEITEM.TOWN_2))     
+            self.get_location(ZOEAREA.CITY_1_UNLOCKED).place_locked_item(
+                self.create_item(ZOEITEM.CITY_1))     
+            self.get_location(ZOEAREA.EPS_1_UNLOCKED).place_locked_item(
+                self.create_item(ZOEITEM.EPS_1))     
+            self.get_location(ZOEAREA.EPS_2_UNLOCKED).place_locked_item(
+                self.create_item(ZOEITEM.EPS_2))     
+            self.get_location(ZOEAREA.TOWN_3_UNLOCKED).place_locked_item(
+                self.create_item(ZOEITEM.TOWN_3))     
+            self.get_location(ZOEAREA.FACTORY_2_UNLOCKED).place_locked_item(
+                self.create_item(ZOEITEM.FACTORY_2))     
+            self.get_location(ZOEAREA.CITY_2_UNLOCKED).place_locked_item(
+                self.create_item(ZOEITEM.CITY_2))     
+            self.get_location(ZOEAREA.PARK_1_UNLOCKED).place_locked_item(
+                self.create_item(ZOEITEM.PARK_1))     
+            self.get_location(ZOEAREA.MOUNTAIN_1_UNLOCKED).place_locked_item(
+                self.create_item(ZOEITEM.MOUNTAIN_1))     
 
     def generate_starting_items(self):
         """Process player options to generate a list of early placed items, ensuring successful seed generation"""
         self.preplaced_items = [ZOEITEM.HANGAR_1,ZOEITEM.FACTORY_1,ZOEITEM.GLOBAL_HUB,ZOEITEM.TOWN_1]
+        if self.options.linear_play.value:     
+                self.preplaced_items = [ZOEITEM.HANGAR_1,ZOEITEM.FACTORY_1,ZOEITEM.GLOBAL_HUB,ZOEITEM.TOWN_1,
+                                        ZOEITEM.TOWN_2, ZOEITEM.CITY_1, ZOEITEM.EPS_1, ZOEITEM.EPS_2, ZOEITEM.TOWN_3,
+                                        ZOEITEM.FACTORY_2, ZOEITEM.CITY_2, ZOEITEM.PARK_1, ZOEITEM.MOUNTAIN_1]
+        else:
+                return
         for item in self.preplaced_items:
             self.push_precollected(self.create_item(item))
         process_start_inventory(self)

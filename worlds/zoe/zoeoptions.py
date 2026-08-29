@@ -17,6 +17,7 @@ from worlds.zoe.options.traps_options import EnableTraps
 from worlds.zoe.options.filler_weight_options import FillerWeight
 from worlds.zoe.options.configuration_options import Configuration
 from worlds.zoe.options.enemy_counter_options import EnemyCounter
+from worlds.zoe.options.linear_play_options import LinearPlay
 
 def create_option_groups() -> list[OptionGroup]:
     """Return the list of option groups for this world"""
@@ -44,6 +45,7 @@ class ZoeOptions(PerGameCommonOptions):
     traps_enabled: EnableTraps
     trap_weight: TrapWeight
     configuration: Configuration
+    linear_play : LinearPlay
 
 zoe_option_groups = [
     OptionGroup("Generic Options", [
@@ -56,6 +58,7 @@ zoe_option_groups = [
         Modules,
         Infos,
         PasscodeItems,
+        LinearPlay,
         EnableTraps,
         TrapWeight,
         FillerWeight,
@@ -84,6 +87,7 @@ slot_data_options: list[str] = [
     ZOEOPTION.INFOS,
     ZOEOPTION.PASSCODES_ITEMS,
     ZOEOPTION.PASSCODES_LOCS,
+    ZOEOPTION.LINEAR_PLAY,
     ZOEOPTION.VRTRAINING,
     ZOEOPTION.ENEMY_COUNTER,
     ZOEOPTION.FILLER_WEIGHT,

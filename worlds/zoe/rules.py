@@ -134,6 +134,8 @@ def set_rules(world: "ZoeWorld"):
             lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
         ZOEENEMYCOUNT.ENEMIES_DESTROYED_65:
             lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
+        ZOEENEMYCOUNT.ENEMIES_DESTROYED_67:
+            lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
         ZOEENEMYCOUNT.ENEMIES_DESTROYED_70:
             lambda state: state.has_all([ZOEITEM.GLOBAL_FCMD, ZOEITEM.MONITOR_FCMD, ZOEITEM.CITY_1], world.player),
         ZOEENEMYCOUNT.ENEMIES_DESTROYED_75:
