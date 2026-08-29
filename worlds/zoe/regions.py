@@ -44,18 +44,23 @@ def create_regions(world: "ZoeWorld"):
                               f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.TOWN_3}", global_hub)    
     create_region_and_connect(world, ZOEREGION.CITY_2,
                               f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.CITY_2}", global_hub)    
+    create_region_and_connect(world, ZOEREGION.FACTORY_2,
+                              f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.FACTORY_2}", global_hub)    
     create_region_and_connect(world, ZOEREGION.PARK_1,
-                              f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.PARK_1}", global_hub)    
-    create_region_and_connect(world, ZOEREGION.MOUNTAIN_1,
-                              f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.MOUNTAIN_1}", global_hub)    
+                              f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.PARK_1}", global_hub)
+    # ----- Ending Sequence ----- #    
+    mountain_slope = create_region_and_connect(world, ZOEREGION.MOUNTAIN_1,
+                              f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.MOUNTAIN_1}", global_hub)  
     create_region_and_connect(world, ZOEREGION.MOUNTAIN_1_NEBULA,
-                              f"{ZOEREGION.MOUNTAIN_1} -> {ZOEREGION.MOUNTAIN_1_NEBULA}", global_hub)    
+                              f"{ZOEREGION.MOUNTAIN_1} -> {ZOEREGION.MOUNTAIN_1_NEBULA}", mountain_slope)    
     create_region_and_connect(world, ZOEREGION.WAREHOUSE_1,
-                              f"{ZOEREGION.MOUNTAIN_1_NEBULA} -> {ZOEREGION.WAREHOUSE_1}", global_hub)    
+                              f"{ZOEREGION.MOUNTAIN_1_NEBULA} -> {ZOEREGION.WAREHOUSE_1}", mountain_slope)
+    create_region_and_connect(world, ZOEREGION.TUNNEL_1,
+                              f"{ZOEREGION.WAREHOUSE_1} -> {ZOEREGION.TUNNEL_1}", mountain_slope)    
     create_region_and_connect(world, ZOEREGION.HUB_1,
-                              f"{ZOEREGION.WAREHOUSE_1} -> {ZOEREGION.HUB_1}", global_hub)    
+                              f"{ZOEREGION.TUNNEL_1} -> {ZOEREGION.HUB_1}", mountain_slope)    
     create_region_and_connect(world, ZOEREGION.ATLANTIS_1,
-                              f"{ZOEREGION.HUB_1} -> {ZOEREGION.ATLANTIS_1}", global_hub)    
+                              f"{ZOEREGION.HUB_1} -> {ZOEREGION.ATLANTIS_1}", mountain_slope)    
     
 
     # ----- Regions for other stuff -----#

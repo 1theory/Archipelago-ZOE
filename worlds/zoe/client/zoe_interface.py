@@ -528,7 +528,7 @@ class ZoeInterface(GameInterface):
     @staticmethod
     def get_victory_code():
         """Returns the apcode value of the goal location"""
-        return ZOE_LOCATION_DATA_TABLE[ZOELOCATION.CITY_1_DESTROY_RELAY_BLOCK].AP_CODE
+        return ZOE_LOCATION_DATA_TABLE[ZOELOCATION.FLOWING_DESTINY].AP_CODE
 
     ##################
     # End of Main Loop #

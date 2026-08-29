@@ -88,23 +88,22 @@ def set_rules(world: "ZoeWorld"):
                         and state.has(ZOEITEM.FACTORY_2, world.player),
 
         f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.MOUNTAIN_1}":
-            lambda state: state.can_reach_location(ZOELOCATION.PARK_1_TYRANT, world.player)
-                        and state.has(ZOEITEM.MOUNTAIN_1, world.player),
+            lambda state: state.has_all([ZOEITEM.MOUNTAIN_1], world.player),
 
-        f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.MOUNTAIN_1_NEBULA}":
-            lambda state: state.can_reach_region(ZOEREGION.MOUNTAIN_1, world.player),
+        f"{ZOEREGION.MOUNTAIN_1} -> {ZOEREGION.MOUNTAIN_1_NEBULA}":
+            lambda state: state.has_all([ZOEITEM.MOUNTAIN_1], world.player),
 
-        f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.WAREHOUSE_1}":
-            lambda state: state.can_reach_region(ZOEREGION.MOUNTAIN_1, world.player),
+        f"{ZOEREGION.MOUNTAIN_1_NEBULA} -> {ZOEREGION.WAREHOUSE_1}":
+            lambda state: state.has_all([ZOEITEM.MOUNTAIN_1], world.player),
 
-        f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.TUNNEL_1}":
-            lambda state: state.can_reach_region(ZOEREGION.MOUNTAIN_1, world.player),
+        f"{ZOEREGION.WAREHOUSE_1} -> {ZOEREGION.TUNNEL_1}":
+            lambda state: state.has_all([ZOEITEM.MOUNTAIN_1], world.player),
 
-        f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.HUB_1}":
-            lambda state: state.can_reach_region(ZOEREGION.MOUNTAIN_1, world.player),         
+        f"{ZOEREGION.TUNNEL_1} -> {ZOEREGION.HUB_1}":
+            lambda state: state.has_all([ZOEITEM.MOUNTAIN_1], world.player),        
 
-        f"{ZOEREGION.GLOBAL_HUB} -> {ZOEREGION.ATLANTIS_1}":
-            lambda state: state.can_reach_region(ZOEREGION.MOUNTAIN_1, world.player),          
+        f"{ZOEREGION.HUB_1} -> {ZOEREGION.ATLANTIS_1}":
+            lambda state: state.has_all([ZOEITEM.MOUNTAIN_1], world.player),      
     }
 
     rules_dict: dict[str, Callable] = {
@@ -206,7 +205,36 @@ def set_rules(world: "ZoeWorld"):
         ZOELOCATION.TOWN_2_CONTROL_RAPTOR:
             lambda state: state.has(ZOEITEM.RAPTR_CTRL_FCMD, world.player)
                         and state.can_reach_region(ZOEREGION.EPS_2, world.player),
-
+        ZOELOCATION.EPS_2_DETECTOR_MODULE_LOCAL_SERVER:
+            lambda state: state.has(ZOEITEM.RAPTR_CTRL_FCMD, world.player),
+        ZOELOCATION.EPS_2_BREAK_THE_WALLS_DOWN:
+            lambda state: state.has(ZOEITEM.RAPTR_CTRL_FCMD, world.player),
+        ZOELOCATION.EPS_2_GENERATOR_DESTROYED:
+            lambda state: state.has(ZOEITEM.RAPTR_CTRL_FCMD, world.player),
+        ZOELOCATION.EPS_2_FORCEFIELD_DOWN:
+            lambda state: state.has(ZOEITEM.RAPTR_CTRL_FCMD, world.player),
+        ZOELOCATION.FACTORY_2_VACCINE:
+            lambda state: state.has(ZOEITEM.VACCINE_EXEC, world.player),
+        ZOELOCATION.CITY_1_RESCUE_MISSION:
+            lambda state: state.can_reach_location(ZOELOCATION.FACTORY_2_VACCINE, world.player),
+        ZOELOCATION.CITY_1_RESCUE_RANK_A:
+            lambda state: state.can_reach_location(ZOELOCATION.FACTORY_2_VACCINE, world.player),
+        ZOELOCATION.CITY_1_RESCUE_RANK_B:
+            lambda state: state.can_reach_location(ZOELOCATION.FACTORY_2_VACCINE, world.player),
+        ZOELOCATION.CITY_1_RESCUE_RANK_C:
+            lambda state: state.can_reach_location(ZOELOCATION.FACTORY_2_VACCINE, world.player),
+        ZOELOCATION.CITY_1_RESCUE_RANK_D:
+            lambda state: state.can_reach_location(ZOELOCATION.FACTORY_2_VACCINE, world.player),
+        ZOELOCATION.CITY_1_RESCUE_RANK_E:
+            lambda state: state.can_reach_location(ZOELOCATION.FACTORY_2_VACCINE, world.player),
+        ZOELOCATION.CITY_2_DECOY_PASSCODE_1:
+            lambda state: state.can_reach_location(ZOELOCATION.FACTORY_2_VACCINE, world.player),
+        ZOELOCATION.TOWN_3_DECOY_PASSCODE_2:
+            lambda state: state.can_reach_location(ZOELOCATION.FACTORY_2_VACCINE, world.player),
+        ZOELOCATION.PARK_1_TYRANT:
+            lambda state: state.has(ZOEITEM.DECOY, world.player),
+        ZOELOCATION.FLOWING_DESTINY:
+            lambda state: state.has_all([ZOEITEM.MONITOR_FCMD, ZOEITEM.GLOBAL_FCMD, ZOEITEM.SNIPER, ZOEITEM.VACCINE_EXEC, ZOEITEM.RAPTR_CTRL_FCMD, ZOEITEM.DECOY, ZOEITEM.DETECTOR_FCMD], world.player)
     }
 
     for region in world.multiworld.get_regions(world.player):
